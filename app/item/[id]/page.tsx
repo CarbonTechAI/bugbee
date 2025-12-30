@@ -36,6 +36,9 @@ export default function ItemDetail() {
             setItem(data.item);
             setEditData(data.item);
             setActivity(data.activity);
+
+            // Mark as viewed
+            localStorage.setItem(`bugbee_viewed_${id}`, new Date().toISOString());
         } catch (e) {
             console.error(e);
         } finally {

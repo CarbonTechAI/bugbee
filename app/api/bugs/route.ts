@@ -5,15 +5,38 @@ import { validateToken, unauthorizedResponse } from '../../utils/auth';
 export async function GET(req: NextRequest) {
     if (!validateToken(req)) return unauthorizedResponse();
 
-    const { searchParams } = new URL(req.url); // Can use for filters later if needed
-
-    const { data, error } = await supabaseAdmin
+    const { data: bugs, error } = await supabaseAdmin
         .from('bugs')
         .select('*')
         .order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data);
+
+    // Fetch latest comments
+    // optimization: filtering by item_type likely helps index usage
+    const { data: comments } = await supabaseAdmin
+        .from('activity_log')
+        .select('item_id, created_at')
+        .eq('item_type', 'bug')
+        .eq('action', 'comment')
+        .order('created_at', { ascending: false });
+
+    const commentMap = new Map();
+    if (comments) {
+        // Since it's ordered by desc, the first one encountered for an ID is the latest
+        for (const c of comments) {
+            if (!commentMap.has(c.item_id)) {
+                commentMap.set(c.item_id, c.created_at);
+            }
+        }
+    }
+
+    const enrichedBugs = bugs.map(bug => ({
+        ...bug,
+        last_comment_at: commentMap.get(bug.id) || null
+    }));
+
+    return NextResponse.json(enrichedBugs);
 }
 
 export async function POST(req: NextRequest) {

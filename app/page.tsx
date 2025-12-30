@@ -130,7 +130,7 @@ export default function Dashboard() {
                 <tr>
                   <th className="px-6 py-3 w-40">{tab === 'bugs' ? 'Severity' : 'Priority'}</th>
                   <th className="px-6 py-3">Title</th>
-                  <th className="px-6 py-3 w-40">Status</th>
+                  <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3 w-40 text-right">Created</th>
                 </tr>
               </thead>
@@ -148,7 +148,19 @@ export default function Dashboard() {
                     >
                       <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} /></td>
                       <td className="px-6 py-4 font-medium">{item.title}</td>
-                      <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={item.status} />
+                          {item.last_comment_at && (
+                            (!localStorage.getItem(`bugbee_viewed_${item.id}`) ||
+                              new Date(item.last_comment_at) > new Date(localStorage.getItem(`bugbee_viewed_${item.id}`)!))
+                          ) && (
+                              <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border border-red-500/20 whitespace-nowrap">
+                                New Comment
+                              </span>
+                            )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-right text-slate-500">
                         {new Date(item.created_at).toLocaleDateString()}
                       </td>

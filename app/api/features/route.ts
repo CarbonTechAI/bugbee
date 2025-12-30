@@ -5,13 +5,35 @@ import { validateToken, unauthorizedResponse } from '../../utils/auth';
 export async function GET(req: NextRequest) {
     if (!validateToken(req)) return unauthorizedResponse();
 
-    const { data, error } = await supabaseAdmin
+    const { data: features, error } = await supabaseAdmin
         .from('features')
         .select('*')
         .order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data);
+
+    const { data: comments } = await supabaseAdmin
+        .from('activity_log')
+        .select('item_id, created_at')
+        .eq('item_type', 'feature')
+        .eq('action', 'comment')
+        .order('created_at', { ascending: false });
+
+    const commentMap = new Map();
+    if (comments) {
+        for (const c of comments) {
+            if (!commentMap.has(c.item_id)) {
+                commentMap.set(c.item_id, c.created_at);
+            }
+        }
+    }
+
+    const enrichedFeatures = features.map(f => ({
+        ...f,
+        last_comment_at: commentMap.get(f.id) || null
+    }));
+
+    return NextResponse.json(enrichedFeatures);
 }
 
 export async function POST(req: NextRequest) {
