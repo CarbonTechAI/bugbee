@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: 'Internal Bug & Feature Tracker',
   icons: {
     icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
 };
 
