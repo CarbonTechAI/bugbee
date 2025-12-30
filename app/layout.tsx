@@ -25,25 +25,25 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col">
             <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-10">
               <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-start">
+                <div className="w-full md:w-auto flex justify-between md:justify-start">
                   <Link href="/" className="font-bold text-lg tracking-tight flex items-center gap-2">
                     <img src="/favicon.ico" alt="BugBee Logo" className="w-6 h-6 rounded" />
                     BugBee
                   </Link>
-                  <div className="hidden md:block">
-                    <Nav />
-                  </div>
                 </div>
 
-                {/* Mobile Nav Placeholder (if needed in future) or simple stacking */}
-                <div className="md:hidden w-full flex justify-center">
+                {/* Desktop Nav + Logout */}
+                <div className="hidden md:flex items-center gap-6">
                   <Nav />
-                </div>
-
-                <div className="hidden md:block">
+                  <div className="w-px h-6 bg-slate-800"></div>
                   <LogoutButton />
                 </div>
-                {/* Mobile Logout - maybe small icon? For now keep simple */}
+
+                {/* Mobile Nav */}
+                <div className="md:hidden w-full flex flex-col gap-4 items-center">
+                  <Nav />
+                  <LogoutButton />
+                </div>
               </div>
             </header>
             <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
