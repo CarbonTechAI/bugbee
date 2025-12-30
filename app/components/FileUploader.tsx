@@ -84,21 +84,21 @@ export default function FileUploader({ onFilesChange, title = 'Attachments' }: F
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 {files.map((file, idx) => (
-                    <div key={idx} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700">
+                    <div key={idx} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700 flex flex-col">
+                        <button
+                            onClick={() => removeFile(idx)}
+                            className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded hover:bg-red-500 transition-colors z-10"
+                            type="button"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
                         <img
                             src={URL.createObjectURL(file)}
                             alt={file.name}
                             className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => setViewingImage(URL.createObjectURL(file))}
                         />
-                        <button
-                            onClick={() => removeFile(idx)}
-                            className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded hover:bg-red-500 transition-colors"
-                            type="button"
-                        >
-                            <X className="w-3.5 h-3.5" />
-                        </button>
-                        <div className="absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1 text-[10px] text-white truncate">
+                        <div className="p-2 text-[10px] text-slate-300 truncate border-t border-slate-700 bg-slate-900/30">
                             {file.name}
                         </div>
                     </div>

@@ -5,13 +5,19 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import StatusBadge from './components/StatusBadge';
 import { useRouter } from 'next/navigation';
+import { Filter, ArrowUpDown } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<'bugs' | 'features'>('bugs');
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
+
+  // Filters
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     fetchItems();
@@ -37,10 +43,22 @@ export default function Dashboard() {
     }
   };
 
-  const filteredItems = items.filter(i =>
-    i.title.toLowerCase().includes(filter.toLowerCase()) ||
-    i.status.includes(filter.toLowerCase())
-  );
+  const filteredItems = items
+    .filter(i => {
+      const matchesSearch = i.title.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || i.status === statusFilter;
+      const matchesSeverity = severityFilter === 'all' || (tab === 'bugs' ? i.severity === severityFilter : i.priority === severityFilter);
+      return matchesSearch && matchesStatus && matchesSeverity;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.updated_at).getTime();
+      const dateB = new Date(b.updated_at).getTime();
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
+  const uniqueStatuses = Array.from(new Set(items.map(i => i.status)));
+  const severities = ['low', 'medium', 'high', 'critical'];
+  const priorities = ['nice', 'important', 'critical'];
 
   return (
     <div>
@@ -64,23 +82,56 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-4">
-          <div className="flex gap-4 mb-4">
+          <div className="flex flex-wrap gap-4 mb-4 items-center">
             <input
               placeholder="Search..."
-              className="input max-w-sm"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              className="input max-w-xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
+
+            <div className="h-8 w-px bg-slate-700 hidden md:block"></div>
+
+            <select
+              className="input max-w-[150px]"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              {uniqueStatuses.map(s => (
+                <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
+              ))}
+            </select>
+
+            <select
+              className="input max-w-[150px]"
+              value={severityFilter}
+              onChange={(e) => setSeverityFilter(e.target.value)}
+            >
+              <option value="all">All {tab === 'bugs' ? 'Severities' : 'Priorities'}</option>
+              {(tab === 'bugs' ? severities : priorities).map(s => (
+                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+              className="btn btn-secondary flex items-center gap-2"
+              title="Sort by Update"
+            >
+              <ArrowUpDown size={14} />
+              {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+            </button>
           </div>
 
           <div className="card p-0 overflow-hidden">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-900/50 text-slate-400 font-medium border-b border-slate-700">
                 <tr>
+                  <th className="px-6 py-3 w-40">{tab === 'bugs' ? 'Severity' : 'Priority'}</th>
                   <th className="px-6 py-3">Title</th>
-                  <th className="px-6 py-3 w-32">Status</th>
-                  <th className="px-6 py-3 w-32">{tab === 'bugs' ? 'Severity' : 'Priority'}</th>
-                  <th className="px-6 py-3 w-32 text-right">Updated</th>
+                  <th className="px-6 py-3 w-40">Status</th>
+                  <th className="px-6 py-3 w-40 text-right">Updated</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
@@ -95,9 +146,9 @@ export default function Dashboard() {
                       onClick={() => router.push(`/item/${item.id}?type=${tab === 'bugs' ? 'bug' : 'feature'}`)}
                       className="hover:bg-slate-700/50 cursor-pointer transition-colors"
                     >
+                      <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} /></td>
                       <td className="px-6 py-4 font-medium">{item.title}</td>
                       <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
-                      <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} /></td>
                       <td className="px-6 py-4 text-right text-slate-500">
                         {new Date(item.updated_at).toLocaleDateString()}
                       </td>

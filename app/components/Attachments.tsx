@@ -170,23 +170,23 @@ export default function Attachments({ itemId, itemType = 'bug', readOnly = false
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 {attachments.map(att => (
-                    <div key={att.id} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700">
+                    <div key={att.id} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700 flex flex-col">
+                        {!readOnly && (
+                            <button
+                                onClick={() => handleDelete(att.id)}
+                                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
+                                title="Delete"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                         <img
                             src={att.signedUrl}
                             alt={att.file_name}
                             className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => setViewingImage(att.signedUrl)}
                         />
-                        {!readOnly && (
-                            <button
-                                onClick={() => handleDelete(att.id)}
-                                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-                                title="Delete"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                        )}
-                        <div className="absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1 text-[10px] text-white truncate">
+                        <div className="p-2 text-[10px] text-slate-300 truncate border-t border-slate-700 bg-slate-900/30">
                             {att.file_name}
                         </div>
                     </div>
