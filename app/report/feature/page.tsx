@@ -1,17 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function ReportFeature() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        priority: 'important',
+        description: '',
+        requester_name: '',
+        requester_email: ''
+    });
+
+    useEffect(() => {
+        const saved = localStorage.getItem('draft_feature');
+        if (saved) {
+            try {
+                setFormData(JSON.parse(saved));
+            } catch (e) {
+                console.error('Failed to load draft', e);
+            }
+        }
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        const newData = { ...formData, [name]: value };
+        setFormData(newData);
+        localStorage.setItem('draft_feature', JSON.stringify(newData));
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSubmitting(true);
-        const formData = new FormData(e.currentTarget);
-        const data = Object.fromEntries(formData.entries());
 
         try {
             const res = await fetch('/api/features', {
@@ -20,11 +43,12 @@ export default function ReportFeature() {
                     'Content-Type': 'application/json',
                     'x-bugbee-token': localStorage.getItem('bugbee_token') || '',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(formData),
             });
 
             if (!res.ok) throw new Error('Failed to submit');
 
+            localStorage.removeItem('draft_feature');
             router.push('/');
         } catch (err) {
             alert('Error submitting feature');
@@ -43,12 +67,25 @@ export default function ReportFeature() {
             <form onSubmit={handleSubmit} className="card space-y-6">
                 <div>
                     <label className="label">Title</label>
-                    <input name="title" required className="input" placeholder="e.g. Add Dark Mode" />
+                    <input
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        required
+                        className="input"
+                        placeholder="e.g. Add Dark Mode"
+                    />
                 </div>
 
                 <div>
                     <label className="label">Priority</label>
-                    <select name="priority" className="input" required>
+                    <select
+                        name="priority"
+                        value={formData.priority}
+                        onChange={handleChange}
+                        className="input"
+                        required
+                    >
                         <option value="critical">Critical (Cannot work without)</option>
                         <option value="important">Important (Need this soon)</option>
                         <option value="nice">Nice to Have (Someday)</option>
@@ -57,17 +94,35 @@ export default function ReportFeature() {
 
                 <div>
                     <label className="label">Description / Use Case</label>
-                    <textarea name="description" required className="input h-48" placeholder="Describe the feature and why it's needed..." />
+                    <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        required
+                        className="input h-48"
+                        placeholder="Describe the feature and why it's needed..."
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-slate-700 pt-4">
                     <div>
                         <label className="label">Your Name (Optional)</label>
-                        <input name="requester_name" className="input" />
+                        <input
+                            name="requester_name"
+                            value={formData.requester_name}
+                            onChange={handleChange}
+                            className="input"
+                        />
                     </div>
                     <div>
                         <label className="label">Your Email (Optional)</label>
-                        <input name="requester_email" type="email" className="input" />
+                        <input
+                            name="requester_email"
+                            value={formData.requester_email}
+                            onChange={handleChange}
+                            type="email"
+                            className="input"
+                        />
                     </div>
                 </div>
 

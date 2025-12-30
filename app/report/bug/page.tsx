@@ -1,17 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function ReportBug() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        severity: 'critical',
+        environment: '',
+        expected_result: '',
+        actual_result: '',
+        reproduction_steps: '',
+        console_logs: '',
+        reporter_name: '',
+        reporter_email: ''
+    });
+
+    useEffect(() => {
+        const saved = localStorage.getItem('draft_bug');
+        if (saved) {
+            try {
+                setFormData(JSON.parse(saved));
+            } catch (e) {
+                console.error('Failed to load draft', e);
+            }
+        }
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        const newData = { ...formData, [name]: value };
+        setFormData(newData);
+        localStorage.setItem('draft_bug', JSON.stringify(newData));
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSubmitting(true);
-        const formData = new FormData(e.currentTarget);
-        const data = Object.fromEntries(formData.entries());
 
         try {
             const res = await fetch('/api/bugs', {
@@ -20,11 +47,12 @@ export default function ReportBug() {
                     'Content-Type': 'application/json',
                     'x-bugbee-token': localStorage.getItem('bugbee_token') || '',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(formData),
             });
 
             if (!res.ok) throw new Error('Failed to submit');
 
+            localStorage.removeItem('draft_bug');
             router.push('/');
         } catch (err) {
             alert('Error submitting bug');
@@ -43,13 +71,26 @@ export default function ReportBug() {
             <form onSubmit={handleSubmit} className="card space-y-6">
                 <div>
                     <label className="label">Title</label>
-                    <input name="title" required className="input" placeholder="e.g. Login page crashes on submit" />
+                    <input
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        required
+                        className="input"
+                        placeholder="e.g. Login page crashes on submit"
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="label">Severity</label>
-                        <select name="severity" className="input" required>
+                        <select
+                            name="severity"
+                            value={formData.severity}
+                            onChange={handleChange}
+                            className="input"
+                            required
+                        >
                             <option value="critical">Critical (Blocker)</option>
                             <option value="high">High (Major Feature)</option>
                             <option value="medium">Medium (User Impact)</option>
@@ -58,39 +99,83 @@ export default function ReportBug() {
                     </div>
                     <div>
                         <label className="label">Environment</label>
-                        <input name="environment" className="input" placeholder="e.g. Chrome, Mac, Staging" />
+                        <input
+                            name="environment"
+                            value={formData.environment}
+                            onChange={handleChange}
+                            className="input"
+                            placeholder="e.g. Chrome, Mac, Staging"
+                        />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="label">Expected Result</label>
-                        <textarea name="expected_result" required className="input h-24" placeholder="What should have happened?" />
+                        <textarea
+                            name="expected_result"
+                            value={formData.expected_result}
+                            onChange={handleChange}
+                            required
+                            className="input h-24"
+                            placeholder="What should have happened?"
+                        />
                     </div>
                     <div>
                         <label className="label">Actual Result</label>
-                        <textarea name="actual_result" required className="input h-24" placeholder="What happened instead?" />
+                        <textarea
+                            name="actual_result"
+                            value={formData.actual_result}
+                            onChange={handleChange}
+                            required
+                            className="input h-24"
+                            placeholder="What happened instead?"
+                        />
                     </div>
                 </div>
 
                 <div>
                     <label className="label">Reproduction Steps</label>
-                    <textarea name="reproduction_steps" required className="input h-32 font-mono text-sm" placeholder="1. Go to page X&#10;2. Click button Y..." />
+                    <textarea
+                        name="reproduction_steps"
+                        value={formData.reproduction_steps}
+                        onChange={handleChange}
+                        required
+                        className="input h-32 font-mono text-sm"
+                        placeholder="1. Go to page X&#10;2. Click button Y..."
+                    />
                 </div>
 
                 <div>
                     <label className="label">Console Logs / Errors</label>
-                    <textarea name="console_logs" className="input h-32 font-mono text-xs text-slate-400" placeholder="Paste any stack traces or errors here..." />
+                    <textarea
+                        name="console_logs"
+                        value={formData.console_logs}
+                        onChange={handleChange}
+                        className="input h-32 font-mono text-xs text-slate-400"
+                        placeholder="Paste any stack traces or errors here..."
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-slate-700 pt-4">
                     <div>
                         <label className="label">Your Name (Optional)</label>
-                        <input name="reporter_name" className="input" />
+                        <input
+                            name="reporter_name"
+                            value={formData.reporter_name}
+                            onChange={handleChange}
+                            className="input"
+                        />
                     </div>
                     <div>
                         <label className="label">Your Email (Optional)</label>
-                        <input name="reporter_email" type="email" className="input" />
+                        <input
+                            name="reporter_email"
+                            value={formData.reporter_email}
+                            onChange={handleChange}
+                            type="email"
+                            className="input"
+                        />
                     </div>
                 </div>
 
