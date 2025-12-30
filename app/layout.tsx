@@ -25,7 +25,7 @@ export default function RootLayout({
             <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-10">
               <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
                 <Link href="/" className="font-bold text-lg tracking-tight flex items-center gap-2">
-                  <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-xs">B</div>
+                  <img src="/favicon.ico" alt="BugBee Logo" className="w-6 h-6 rounded" />
                   BugBee
                 </Link>
                 <Nav />
