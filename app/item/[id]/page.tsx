@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import StatusBadge from '../components/StatusBadge';
+import StatusBadge from '../../components/StatusBadge';
 import { Copy } from 'lucide-react';
 import clsx from 'clsx';
 
