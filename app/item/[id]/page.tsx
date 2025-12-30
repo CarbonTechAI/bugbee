@@ -150,22 +150,20 @@ ${item.console_logs}
             <div className="space-y-6">
                 <div className="card space-y-4">
                     <label className="label">Actions</label>
-                    <div className="grid grid-cols-2 gap-2">
-                        {
-                            (type === 'bug'
-                                ? ['open', 'in_progress', 'fixed', 'needs_verification', 'closed']
-                                : ['open', 'planned', 'in_progress', 'shipped', 'closed']
-                            ).map(s => (
-                                <button
-                                    key={s}
-                                    className={clsx("btn text-xs", item.status === s ? "bg-slate-600 text-white border border-slate-500" : "bg-slate-800 hover:bg-slate-700")}
-                                    onClick={() => handleUpdate(s)}
-                                    disabled={item.status === s}
-                                >
-                                    Mark {s.replace('_', ' ')}
-                                </button>
-                            ))}
-                    </div>
+                    <select
+                        className="input w-full"
+                        value={item.status}
+                        onChange={(e) => handleUpdate(e.target.value)}
+                    >
+                        {(type === 'bug'
+                            ? ['open', 'in_progress', 'fixed', 'needs_verification', 'closed']
+                            : ['open', 'planned', 'in_progress', 'shipped', 'closed']
+                        ).map(s => (
+                            <option key={s} value={s}>
+                                {s.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </option>
+                        ))}
+                    </select>
                     <div className="pt-4 border-t border-slate-700">
                         <textarea
                             className="input w-full h-24 mb-2"
