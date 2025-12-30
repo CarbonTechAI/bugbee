@@ -9,7 +9,7 @@ export default function StatusBadge({ status, severity }: { status?: string, sev
             low: 'bg-green-500/20 text-green-500 border-green-500/30',
         };
         return (
-            <span className={clsx("px-2 py-0.5 rounded text-xs font-semibold border uppercase", colors[severity.toLowerCase()] || 'bg-slate-700 text-slate-300 border-slate-600')}>
+            <span className={clsx("px-2 py-0.5 rounded text-xs font-semibold border uppercase whitespace-nowrap", colors[severity.toLowerCase()] || 'bg-slate-700 text-slate-300 border-slate-600')}>
                 {severity}
             </span>
         );
@@ -25,7 +25,7 @@ export default function StatusBadge({ status, severity }: { status?: string, sev
             closed: 'bg-slate-700/50 text-slate-500 border-slate-700',
         };
         return (
-            <span className={clsx("px-2 py-0.5 rounded text-xs font-semibold border capitalize", colors[status.toLowerCase()] || 'bg-slate-700 text-slate-300 border-slate-600')}>
+            <span className={clsx("px-2 py-0.5 rounded text-xs font-semibold border capitalize whitespace-nowrap", colors[status.toLowerCase()] || 'bg-slate-700 text-slate-300 border-slate-600')}>
                 {status.replace('_', ' ')}
             </span>
         );
