@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import StatusBadge from '../../components/StatusBadge';
+import Attachments from '../../components/Attachments';
 import { Copy } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -145,6 +146,7 @@ ${item.console_logs}
                         </div>
                     )}
                 </div>
+                {type === 'bug' && <Attachments bugId={id} />}
             </div>
 
             <div className="space-y-6">
