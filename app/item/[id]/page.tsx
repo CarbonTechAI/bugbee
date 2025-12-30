@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import StatusBadge from '../../components/StatusBadge';
 import Attachments from '../../components/Attachments';
-import { Copy } from 'lucide-react';
+import { Copy, ThumbsUp } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function ItemDetail() {
@@ -21,6 +21,8 @@ export default function ItemDetail() {
     const [updating, setUpdating] = useState(false);
     const [editing, setEditing] = useState(false);
     const [editData, setEditData] = useState<any>(null);
+    const [hasUnread, setHasUnread] = useState(false);
+    const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
 
     useEffect(() => {
         if (id && type) fetchItem();
@@ -37,13 +39,27 @@ export default function ItemDetail() {
             setEditData(data.item);
             setActivity(data.activity);
 
-            // Mark as viewed
-            localStorage.setItem(`bugbee_viewed_${id}`, new Date().toISOString());
+            // Calculate unread status
+            const latestComment = data.activity.find((a: any) => a.action === 'comment');
+            if (latestComment) {
+                setLatestCommentDate(latestComment.created_at);
+                const lastViewed = localStorage.getItem(`bugbee_viewed_${id}`);
+                if (!lastViewed || new Date(latestComment.created_at) > new Date(lastViewed)) {
+                    setHasUnread(true);
+                }
+            }
         } catch (e) {
             console.error(e);
         } finally {
             setLoading(false);
         }
+    };
+
+    const markAsRead = () => {
+        if (!latestCommentDate) return;
+        // Use latest comment date to be precise, or just NOW to clear everything current
+        localStorage.setItem(`bugbee_viewed_${id}`, new Date().toISOString());
+        setHasUnread(false);
     };
 
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -142,6 +158,16 @@ ${item.console_logs}
                         <div className="flex gap-2">
                             <StatusBadge status={item.status} />
                             <StatusBadge severity={item.severity || item.priority} />
+                            {hasUnread && (
+                                <button
+                                    onClick={markAsRead}
+                                    className="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider hover:bg-red-500 hover:text-white transition-colors flex items-center gap-1 animate-pulse"
+                                    title="Click to acknowledge updates"
+                                >
+                                    <ThumbsUp size={12} />
+                                    New Comments
+                                </button>
+                            )}
                         </div>
                     </div>
                     {type === 'bug' && !editing && (
