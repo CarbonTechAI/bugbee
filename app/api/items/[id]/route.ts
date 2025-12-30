@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../utils/supabase';
 import { validateToken, unauthorizedResponse } from '../../../utils/auth';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     if (!validateToken(req)) return unauthorizedResponse();
-    const id = params.id;
+    const { id } = await params;
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type'); // 'bug' or 'feature'
 
@@ -31,9 +31,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ item, activity: activity || [] });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     if (!validateToken(req)) return unauthorizedResponse();
-    const id = params.id;
+    const { id } = await params;
 
     try {
         const body = await req.json();
