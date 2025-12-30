@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import FileUploader from '../../components/FileUploader';
 
 export default function ReportBug() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [files, setFiles] = useState<File[]>([]);
     const [formData, setFormData] = useState({
         title: '',
         severity: 'critical',
@@ -41,6 +43,7 @@ export default function ReportBug() {
         setSubmitting(true);
 
         try {
+            // 1. Create Bug
             const res = await fetch('/api/bugs', {
                 method: 'POST',
                 headers: {
@@ -51,10 +54,28 @@ export default function ReportBug() {
             });
 
             if (!res.ok) throw new Error('Failed to submit');
+            const data = await res.json();
+            const bugId = data.id;
+
+            // 2. Upload Files if any
+            if (files.length > 0 && bugId) {
+                await Promise.all(
+                    files.map(async (file) => {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        await fetch(`/api/bugs/${bugId}/attachments`, {
+                            method: 'POST',
+                            headers: { 'x-bugbee-token': localStorage.getItem('bugbee_token') || '' },
+                            body: formData,
+                        });
+                    })
+                );
+            }
 
             localStorage.removeItem('draft_bug');
             router.push('/');
         } catch (err) {
+            console.error(err);
             alert('Error submitting bug');
         } finally {
             setSubmitting(false);
@@ -144,6 +165,10 @@ export default function ReportBug() {
                         className="input h-32 font-mono text-sm"
                         placeholder="1. Go to page X&#10;2. Click button Y..."
                     />
+                </div>
+
+                <div>
+                    <FileUploader onFilesChange={setFiles} />
                 </div>
 
                 <div>

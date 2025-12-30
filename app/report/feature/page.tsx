@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import FileUploader from '../../components/FileUploader';
 
 export default function ReportFeature() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
+    const [files, setFiles] = useState<File[]>([]);
     const [formData, setFormData] = useState({
         title: '',
         priority: 'important',
@@ -37,6 +39,7 @@ export default function ReportFeature() {
         setSubmitting(true);
 
         try {
+            // 1. Create Feature
             const res = await fetch('/api/features', {
                 method: 'POST',
                 headers: {
@@ -47,10 +50,28 @@ export default function ReportFeature() {
             });
 
             if (!res.ok) throw new Error('Failed to submit');
+            const data = await res.json();
+            const featureId = data.id;
+
+            // 2. Upload Files if any
+            if (files.length > 0 && featureId) {
+                await Promise.all(
+                    files.map(async (file) => {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        await fetch(`/api/features/${featureId}/attachments`, {
+                            method: 'POST',
+                            headers: { 'x-bugbee-token': localStorage.getItem('bugbee_token') || '' },
+                            body: formData,
+                        });
+                    })
+                );
+            }
 
             localStorage.removeItem('draft_feature');
             router.push('/');
         } catch (err) {
+            console.error(err);
             alert('Error submitting feature');
         } finally {
             setSubmitting(false);
@@ -102,6 +123,10 @@ export default function ReportFeature() {
                         className="input h-48"
                         placeholder="Describe the feature and why it's needed..."
                     />
+                </div>
+
+                <div>
+                    <FileUploader onFilesChange={setFiles} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-slate-700 pt-4">

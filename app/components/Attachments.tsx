@@ -12,7 +12,7 @@ interface Attachment {
     size_bytes: number;
 }
 
-export default function Attachments({ bugId }: { bugId: string }) {
+export default function Attachments({ itemId, itemType = 'bug', readOnly = false }: { itemId: string; itemType?: 'bug' | 'feature'; readOnly?: boolean }) {
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -22,7 +22,8 @@ export default function Attachments({ bugId }: { bugId: string }) {
     const fetchAttachments = useCallback(async () => {
         try {
             const token = localStorage.getItem('bugbee_token');
-            const res = await fetch(`/api/bugs/${bugId}/attachments`, {
+            const endpoint = itemType === 'bug' ? 'bugs' : 'features';
+            const res = await fetch(`/api/${endpoint}/${itemId}/attachments`, {
                 headers: { 'x-bugbee-token': token || '' }
             });
             if (res.ok) {
@@ -34,14 +35,14 @@ export default function Attachments({ bugId }: { bugId: string }) {
         } finally {
             setLoading(false);
         }
-    }, [bugId]);
+    }, [itemId, itemType]);
 
     useEffect(() => {
         fetchAttachments();
     }, [fetchAttachments]);
 
     const handleUpload = async (file: File) => {
-        if (!file) return;
+        if (!file || readOnly) return;
         setUploading(true);
         setError('');
 
@@ -52,7 +53,8 @@ export default function Attachments({ bugId }: { bugId: string }) {
 
         try {
             const token = localStorage.getItem('bugbee_token');
-            const res = await fetch(`/api/bugs/${bugId}/attachments`, {
+            const endpoint = itemType === 'bug' ? 'bugs' : 'features';
+            const res = await fetch(`/api/${endpoint}/${itemId}/attachments`, {
                 method: 'POST',
                 headers: { 'x-bugbee-token': token || '' },
                 body: formData
@@ -73,11 +75,13 @@ export default function Attachments({ bugId }: { bugId: string }) {
     };
 
     const handleDelete = async (attachmentId: string) => {
+        if (readOnly) return;
         if (!confirm('Are you sure you want to delete this attachment?')) return;
 
         try {
             const token = localStorage.getItem('bugbee_token');
-            const res = await fetch(`/api/bugs/${bugId}/attachments/${attachmentId}`, {
+            const endpoint = itemType === 'bug' ? 'bugs' : 'features';
+            const res = await fetch(`/api/${endpoint}/${itemId}/attachments/${attachmentId}`, {
                 method: 'DELETE',
                 headers: { 'x-bugbee-token': token || '' }
             });
@@ -112,7 +116,7 @@ export default function Attachments({ bugId }: { bugId: string }) {
 
         window.addEventListener('paste', handlePaste);
         return () => window.removeEventListener('paste', handlePaste);
-    }, []);
+    }, [readOnly, itemId, itemType]);
 
     const onDrop = (e: React.DragEvent) => {
         e.preventDefault();
@@ -127,7 +131,10 @@ export default function Attachments({ bugId }: { bugId: string }) {
 
     return (
         <div
-            className="card border-dashed border-2 border-slate-700 bg-slate-900/30"
+            className={clsx(
+                "card border-dashed border-2 bg-slate-900/30",
+                readOnly ? "border-transparent px-0 bg-transparent" : "border-slate-700"
+            )}
             onDragOver={(e) => { e.preventDefault(); }}
             onDrop={onDrop}
         >
@@ -136,26 +143,28 @@ export default function Attachments({ bugId }: { bugId: string }) {
                     <Paperclip className="w-5 h-5 text-slate-400" />
                     Attachments
                 </h3>
-                <div className="relative">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        onChange={(e) => e.target.files && handleUpload(e.target.files[0])}
-                        disabled={uploading}
-                    />
-                    <button className="btn btn-secondary text-xs flex items-center gap-2" disabled={uploading}>
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        {uploading ? 'Uploading...' : 'Upload Image'}
-                    </button>
-                </div>
+                {!readOnly && (
+                    <div className="relative">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={(e) => e.target.files && handleUpload(e.target.files[0])}
+                            disabled={uploading}
+                        />
+                        <button className="btn btn-secondary text-xs flex items-center gap-2" disabled={uploading}>
+                            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                            {uploading ? 'Uploading...' : 'Upload Image'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {error && <div className="text-red-400 text-sm mb-4">{error}</div>}
 
             {attachments.length === 0 && !loading && (
                 <div className="text-center text-slate-500 py-8 text-sm">
-                    No attachments yet. Paste an image (Ctrl+V) or drag & drop here.
+                    {readOnly ? 'No attachments.' : 'No attachments yet. Paste an image (Ctrl+V) or drag & drop here.'}
                 </div>
             )}
 
@@ -168,13 +177,15 @@ export default function Attachments({ bugId }: { bugId: string }) {
                             className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => setViewingImage(att.signedUrl)}
                         />
-                        <button
-                            onClick={() => handleDelete(att.id)}
-                            className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-                            title="Delete"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {!readOnly && (
+                            <button
+                                onClick={() => handleDelete(att.id)}
+                                className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                                title="Delete"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                         <div className="absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1 text-[10px] text-white truncate">
                             {att.file_name}
                         </div>

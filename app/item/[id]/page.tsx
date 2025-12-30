@@ -146,7 +146,7 @@ ${item.console_logs}
                         </div>
                     )}
                 </div>
-                {type === 'bug' && <Attachments bugId={id} />}
+                {(type === 'bug' || type === 'feature') && <Attachments itemId={id} itemType={type} readOnly={true} />}
             </div>
 
             <div className="space-y-6">
