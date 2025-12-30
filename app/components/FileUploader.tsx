@@ -82,13 +82,13 @@ export default function FileUploader({ onFilesChange, title = 'Attachments' }: F
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 {files.map((file, idx) => (
-                    <div key={idx} className="relative group bg-slate-800 rounded overflow-hidden aspect-video border border-slate-700">
+                    <div key={idx} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700">
                         <img
                             src={URL.createObjectURL(file)}
                             alt={file.name}
-                            className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => setViewingImage(URL.createObjectURL(file))}
                         />
                         <button

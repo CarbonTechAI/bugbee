@@ -37,38 +37,84 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     try {
         const body = await req.json();
-        const { type, status, user_name, note } = body; // status update
+        const { type, user_name, note, ...updates } = body;
 
         if (!type) return NextResponse.json({ error: 'Type required' }, { status: 400 });
 
-        // Get old status
+        // Allowed fields for update to prevent overwriting metadata like id, created_at
+        const allowedFields = [
+            'title', 'description', 'status', 'severity', 'priority',
+            'expected_result', 'actual_result', 'reproduction_steps',
+            'environment', 'console_logs', 'requester_name', 'requester_email',
+            'reporter_name', 'reporter_email'
+        ];
+
+        const filteredUpdates: any = {};
+        Object.keys(updates).forEach(key => {
+            if (allowedFields.includes(key)) {
+                filteredUpdates[key] = updates[key];
+            }
+        });
+
+        if (Object.keys(filteredUpdates).length === 0 && !note) {
+            return NextResponse.json({ error: 'No valid updates provided' }, { status: 400 });
+        }
+
+        const table = type === 'bug' ? 'bugs' : 'features';
+
+        // Get old item state for logging
         const { data: oldItem } = await supabaseAdmin
-            .from(type === 'bug' ? 'bugs' : 'features')
-            .select('status')
+            .from(table)
+            .select('*')
             .eq('id', id)
             .single();
 
         if (!oldItem) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
 
-        // Update
-        const { data: newItem, error } = await supabaseAdmin
-            .from(type === 'bug' ? 'bugs' : 'features')
-            .update({ status, updated_at: new Date().toISOString() })
-            .eq('id', id)
-            .select()
-            .single();
+        let newItem = oldItem;
 
-        if (error) throw error;
+        // Perform update if we have fields to update
+        if (Object.keys(filteredUpdates).length > 0) {
+            const { data, error } = await supabaseAdmin
+                .from(table)
+                .update({ ...filteredUpdates, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .select()
+                .single();
 
-        // Log
-        if (oldItem.status !== status || note) {
+            if (error) throw error;
+            newItem = data;
+        }
+
+        // Logging Logic
+        if (oldItem.status !== newItem.status) {
             await supabaseAdmin.from('activity_log').insert({
                 item_type: type,
                 item_id: id,
-                action: oldItem.status !== status ? 'status_changed' : 'comment',
+                action: 'status_changed',
                 old_value: oldItem.status,
-                new_value: status,
+                new_value: newItem.status,
                 note: note || '',
+                actor_name: user_name || 'Anonymous'
+            });
+        }
+        // General Update Log (if no status change but other fields changed)
+        else if (Object.keys(filteredUpdates).length > 0) {
+            await supabaseAdmin.from('activity_log').insert({
+                item_type: type,
+                item_id: id,
+                action: 'updated',
+                note: note || 'Updated details',
+                actor_name: user_name || 'Anonymous'
+            });
+        }
+        // Comment Only
+        else if (note) {
+            await supabaseAdmin.from('activity_log').insert({
+                item_type: type,
+                item_id: id,
+                action: 'comment',
+                note: note,
                 actor_name: user_name || 'Anonymous'
             });
         }

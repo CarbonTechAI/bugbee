@@ -168,13 +168,13 @@ export default function Attachments({ itemId, itemType = 'bug', readOnly = false
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 {attachments.map(att => (
-                    <div key={att.id} className="relative group bg-slate-800 rounded overflow-hidden aspect-video border border-slate-700">
+                    <div key={att.id} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700">
                         <img
                             src={att.signedUrl}
                             alt={att.file_name}
-                            className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => setViewingImage(att.signedUrl)}
                         />
                         {!readOnly && (

@@ -19,6 +19,8 @@ export default function ItemDetail() {
     const [loading, setLoading] = useState(true);
     const [comment, setComment] = useState('');
     const [updating, setUpdating] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [editData, setEditData] = useState<any>(null);
 
     useEffect(() => {
         if (id && type) fetchItem();
@@ -32,11 +34,40 @@ export default function ItemDetail() {
             if (res.status === 404) { alert('Item not found'); router.push('/'); return; }
             const data = await res.json();
             setItem(data.item);
+            setEditData(data.item);
             setActivity(data.activity);
         } catch (e) {
             console.error(e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setEditData({ ...editData, [name]: value });
+    };
+
+    const handleEditSubmit = async () => {
+        setUpdating(true);
+        try {
+            const res = await fetch(`/api/items/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-bugbee-token': localStorage.getItem('bugbee_token') || '',
+                },
+                body: JSON.stringify({ ...editData, type }),
+            });
+
+            if (!res.ok) throw new Error('Failed to update');
+
+            setEditing(false);
+            fetchItem();
+        } catch (e) {
+            alert('Error updating item');
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -110,40 +141,113 @@ ${item.console_logs}
                             <StatusBadge severity={item.severity || item.priority} />
                         </div>
                     </div>
-                    {type === 'bug' && (
-                        <button onClick={copyMarkdown} className="btn btn-secondary flex items-center gap-2 text-xs">
-                            <Copy size={14} /> Copy MD
-                        </button>
+                    {type === 'bug' && !editing && (
+                        <div className="flex gap-2">
+                            <button onClick={copyMarkdown} className="btn btn-secondary flex items-center gap-2 text-xs">
+                                <Copy size={14} /> Copy MD
+                            </button>
+                            <button onClick={() => setEditing(true)} className="btn btn-secondary text-xs">Edit</button>
+                        </div>
+                    )}
+                    {type === 'feature' && !editing && (
+                        <button onClick={() => setEditing(true)} className="btn btn-secondary text-xs">Edit</button>
+                    )}
+                    {editing && (
+                        <div className="flex gap-2">
+                            <button onClick={() => { setEditing(false); setEditData(item); }} className="btn btn-secondary text-xs">Cancel</button>
+                            <button onClick={handleEditSubmit} disabled={updating} className="btn btn-primary text-xs">
+                                {updating ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
                     )}
                 </div>
 
                 <div className="card space-y-4">
-                    {type === 'bug' ? (
-                        <>
+                    {editing ? (
+                        <div className="space-y-4">
                             <div>
-                                <label className="label">Actual Result</label>
-                                <div className="whitespace-pre-wrap text-sm">{item.actual_result}</div>
+                                <label className="label">Title</label>
+                                <input name="title" value={editData.title} onChange={handleEditChange} className="input" />
                             </div>
-                            <div>
-                                <label className="label">Expected Result</label>
-                                <div className="whitespace-pre-wrap text-sm">{item.expected_result}</div>
-                            </div>
-                            <div>
-                                <label className="label">Reproduction Steps</label>
-                                <div className="whitespace-pre-wrap text-sm bg-slate-900/50 p-3 rounded font-mono">{item.reproduction_steps}</div>
-                            </div>
-                            {item.environment && (
-                                <div><label className="label">Environment</label><div className="text-sm">{item.environment}</div></div>
+                            {type === 'bug' ? (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="label">Severity</label>
+                                            <select name="severity" value={editData.severity} onChange={handleEditChange} className="input">
+                                                <option value="critical">Critical</option>
+                                                <option value="high">High</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="low">Low</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="label">Environment</label>
+                                            <input name="environment" value={editData.environment || ''} onChange={handleEditChange} className="input" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="label">Actual Result</label>
+                                        <textarea name="actual_result" value={editData.actual_result} onChange={handleEditChange} className="input h-24" />
+                                    </div>
+                                    <div>
+                                        <label className="label">Expected Result</label>
+                                        <textarea name="expected_result" value={editData.expected_result} onChange={handleEditChange} className="input h-24" />
+                                    </div>
+                                    <div>
+                                        <label className="label">Reproduction Steps</label>
+                                        <textarea name="reproduction_steps" value={editData.reproduction_steps} onChange={handleEditChange} className="input h-32 font-mono text-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="label">Console Logs</label>
+                                        <textarea name="console_logs" value={editData.console_logs || ''} onChange={handleEditChange} className="input h-24 font-mono text-xs" />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div>
+                                        <label className="label">Priority</label>
+                                        <select name="priority" value={editData.priority} onChange={handleEditChange} className="input">
+                                            <option value="critical">Critical</option>
+                                            <option value="important">Important</option>
+                                            <option value="nice">Nice to Have</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="label">Description</label>
+                                        <textarea name="description" value={editData.description} onChange={handleEditChange} className="input h-48" />
+                                    </div>
+                                </>
                             )}
-                            {item.console_logs && (
-                                <div><label className="label">Console Logs</label><pre className="bg-black p-3 rounded text-xs overflow-x-auto">{item.console_logs}</pre></div>
-                            )}
-                        </>
-                    ) : (
-                        <div>
-                            <label className="label">Description</label>
-                            <div className="whitespace-pre-wrap text-sm">{item.description}</div>
                         </div>
+                    ) : (
+                        type === 'bug' ? (
+                            <>
+                                <div>
+                                    <label className="label">Actual Result</label>
+                                    <div className="whitespace-pre-wrap text-sm">{item.actual_result}</div>
+                                </div>
+                                <div>
+                                    <label className="label">Expected Result</label>
+                                    <div className="whitespace-pre-wrap text-sm">{item.expected_result}</div>
+                                </div>
+                                <div>
+                                    <label className="label">Reproduction Steps</label>
+                                    <div className="whitespace-pre-wrap text-sm bg-slate-900/50 p-3 rounded font-mono">{item.reproduction_steps}</div>
+                                </div>
+                                {item.environment && (
+                                    <div><label className="label">Environment</label><div className="text-sm">{item.environment}</div></div>
+                                )}
+                                {item.console_logs && (
+                                    <div><label className="label">Console Logs</label><pre className="bg-black p-3 rounded text-xs overflow-x-auto">{item.console_logs}</pre></div>
+                                )}
+                            </>
+                        ) : (
+                            <div>
+                                <label className="label">Description</label>
+                                <div className="whitespace-pre-wrap text-sm">{item.description}</div>
+                            </div>
+                        )
                     )}
                 </div>
                 {(type === 'bug' || type === 'feature') && <Attachments itemId={id} itemType={type} readOnly={true} />}

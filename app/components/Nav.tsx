@@ -1,24 +1,34 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import clsx from 'clsx';
 
 export default function Nav() {
+    const pathname = usePathname();
+
+    const links = [
+        { href: '/', label: 'Dashboard' },
+        { href: '/report/bug', label: '+ Report Bug' },
+        { href: '/report/feature', label: '+ Request Feature' },
+    ];
+
     return (
-        <nav className="flex items-center gap-4 text-sm font-medium text-slate-400">
-            <Link href="/" className="hover:text-white transition-colors">Dashboard</Link>
-            <Link href="/report/bug" className="hover:text-white transition-colors">+ Report Bug</Link>
-            <Link href="/report/feature" className="hover:text-white transition-colors">+ Request Feature</Link>
-            <button
-                onClick={() => {
-                    if (confirm('Are you sure you want to logout?')) {
-                        localStorage.removeItem('bugbee_token');
-                        window.location.reload();
-                    }
-                }}
-                className="text-red-400 hover:text-red-300 ml-4 text-xs"
-            >
-                Logout
-            </button>
+        <nav className="flex flex-col gap-2 text-sm font-medium">
+            {links.map((link) => (
+                <Link
+                    key={link.href}
+                    href={link.href}
+                    className={clsx(
+                        "transition-colors",
+                        pathname === link.href
+                            ? "text-blue-400"
+                            : "text-slate-400 hover:text-white"
+                    )}
+                >
+                    {link.label}
+                </Link>
+            ))}
         </nav>
     );
 }
