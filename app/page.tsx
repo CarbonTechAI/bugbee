@@ -1,65 +1,114 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import clsx from 'clsx';
+import StatusBadge from './components/StatusBadge';
+import { useRouter } from 'next/navigation';
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [tab, setTab] = useState<'bugs' | 'features'>('bugs');
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    fetchItems();
+  }, [tab]);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/${tab}`, {
+        headers: { 'x-bugbee-token': localStorage.getItem('bugbee_token') || '' }
+      });
+      if (res.status === 401) {
+        localStorage.removeItem('bugbee_token');
+        window.location.reload();
+        return;
+      }
+      const data = await res.json();
+      setItems(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredItems = items.filter(i =>
+    i.title.toLowerCase().includes(filter.toLowerCase()) ||
+    i.status.includes(filter.toLowerCase())
+  );
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Inbox</h1>
+        <div className="flex gap-2 bg-slate-800 p-1 rounded-lg">
+          <button
+            onClick={() => setTab('bugs')}
+            className={clsx("px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'bugs' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            Bugs
+          </button>
+          <button
+            onClick={() => setTab('features')}
+            className={clsx("px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'features' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
+          >
+            Features
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-4">
+          <div className="flex gap-4 mb-4">
+            <input
+              placeholder="Search..."
+              className="input max-w-sm"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+
+          <div className="card p-0 overflow-hidden">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-900/50 text-slate-400 font-medium border-b border-slate-700">
+                <tr>
+                  <th className="px-6 py-3">Title</th>
+                  <th className="px-6 py-3 w-32">Status</th>
+                  <th className="px-6 py-3 w-32">{tab === 'bugs' ? 'Severity' : 'Priority'}</th>
+                  <th className="px-6 py-3 w-32 text-right">Updated</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-700">
+                {loading ? (
+                  <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">Loading...</td></tr>
+                ) : filteredItems.length === 0 ? (
+                  <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">No items found</td></tr>
+                ) : (
+                  filteredItems.map(item => (
+                    <tr
+                      key={item.id}
+                      onClick={() => router.push(`/item/${item.id}?type=${tab === 'bugs' ? 'bug' : 'feature'}`)}
+                      className="hover:bg-slate-700/50 cursor-pointer transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium">{item.title}</td>
+                      <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
+                      <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} /></td>
+                      <td className="px-6 py-4 text-right text-slate-500">
+                        {new Date(item.updated_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

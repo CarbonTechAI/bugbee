@@ -1,0 +1,883 @@
+<!-- Legacy QA Commander — inactive (kept for reference) -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecruitBee QA Commander</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-primary: #8b5cf6;
+            /* Violet */
+            --accent-secondary: #06b6d4;
+            /* Cyan */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border-color: rgba(148, 163, 184, 0.1);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 20%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Test Cases */
+        .sidebar {
+            width: 320px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border-right: var(--glass-border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .brand {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.025em;
+            margin-bottom: 1rem;
+        }
+
+        .test-group {
+            margin-bottom: 1rem;
+        }
+
+        .group-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.03);
+            border: var(--glass-border);
+            margin-bottom: 0.4rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .test-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(2px);
+        }
+
+        .test-item.active {
+            border-color: var(--accent-primary);
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+
+        .test-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+
+        .status-badge.pass {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-badge.skip {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: var(--glass-border);
+            color: var(--text-main);
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+
+
+        .card {
+            background: var(--card-bg);
+            border: var(--glass-border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.6rem;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .code-preview {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            background: #000;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: #d4d4d8;
+            white-space: pre-wrap;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .reference-box {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .sql-box {
+            background: #111;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+            position: relative;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.1);
+        }
+
+        .copy-tag {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 0.6rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+
+        .checklist-item input {
+            margin-top: 0.2rem;
+            cursor: pointer;
+        }
+
+        .status-toggles {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.4rem;
+            border-radius: 0.375rem;
+            border: var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .toggle-btn.selected-pass {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .toggle-btn.selected-fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .toggle-btn.selected-skip {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="brand">RecruitBee Manual QA</div>
+        <div id="testList"></div>
+        <button class="btn" style="margin-top: auto;" onclick="exportResults()">Copy Run Summary</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+            <button class="btn" style="font-size: 0.65rem;" onclick="downloadBackup()">Save to Disk</button>
+            <button class="btn" style="font-size: 0.65rem;" onclick="document.getElementById('fileInput').click()">Load
+                File</button>
+        </div>
+        <input type="file" id="fileInput" style="display:none" onchange="uploadBackup(event)">
+        <button class="btn" style="color: var(--danger); font-size: 0.65rem; margin-top: 0.5rem;"
+            onclick="clearStorage()">Reset Progress</button>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <div>
+                <h1 id="currentTestTitle">Select Test Case</h1>
+                <p style="font-size: 0.8rem; color: var(--text-muted)" id="currentTestDesc"></p>
+            </div>
+            <div id="statusToggles" style="display:none;" class="status-toggles">
+                <button class="toggle-btn" onclick="setStatus('Pass')">Pass</button>
+                <button class="toggle-btn" onclick="setStatus('Fail')">Fail</button>
+                <button class="toggle-btn" onclick="setStatus('Skip')">Skip</button>
+            </div>
+        </div>
+
+        <div class="layout-grid" id="mainContent" style="display:none;">
+            <!-- LEFT: MANUAL HELP -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="card">
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label class="form-label" style="color:var(--accent-secondary); margin:0;">Manual
+                                Guide</label>
+                            <button class="btn" style="font-size:0.6rem; padding:0.2rem 0.5rem;"
+                                onclick="toggleEditGuide()" id="editGuideBtn">Edit</button>
+                        </div>
+                        <div id="referenceContent" class="reference-box"></div>
+                        <textarea id="editGuideArea" class="form-textarea"
+                            style="display:none; font-family:monospace; font-size:0.8rem;" rows="10"></textarea>
+                        <div id="editGuideActions" style="display:none; gap:0.5rem; margin-bottom:1rem;">
+                            <button class="btn btn-primary" style="font-size:0.7rem;" onclick="saveGuide()">Save
+                                Changes</button>
+                            <button class="btn" style="font-size:0.7rem;" onclick="cancelEditGuide()">Cancel</button>
+                        </div>
+
+                        <div id="sqlSection" style="display:none;">
+                            <label class="form-label" style="color:#fbbf24">Database Verification</label>
+                            <div class="sql-box">
+                                <span class="copy-tag" onclick="copySql()">Copy SQL</span>
+                                <pre id="sqlContent" style="white-space: pre-wrap; margin:0;"></pre>
+                            </div>
+                        </div>
+
+                        <label class="form-label" style="color:var(--success)">Visual Integrity Check</label>
+                        <div id="visualCheckpoints"></div>
+                    </div>
+
+                    <div class="card">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <label class="form-label"
+                                style="color:var(--danger); border-bottom: 1px solid rgba(239,68,68,0.3); padding-bottom:0.5rem; margin-bottom:0;">Bug
+                                Report Builder</label>
+                            <button class="btn" style="font-size:0.7rem;" onclick="addNewBug()">+ Add Another
+                                Bug</button>
+                        </div>
+
+                        <!-- BUG LIST -->
+                        <div id="bugList" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="flex: 1;">
+                                <label class="form-label"
+                                    style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">Severity</label>
+                                <select class="form-select" id="severity" style="margin-bottom:0;">
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH" selected>High</option>
+                                    <option value="CRITICAL">Critical</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <label class="form-label"
+                                    style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">Environment</label>
+                                <input class="form-input" id="env" placeholder="e.g. macOS / Chrome 120"
+                                    style="margin-bottom:0;">
+                            </div>
+                        </div>
+
+                        <label class="form-label"
+                            style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">Actual Result
+                            (What
+                            went wrong?)</label>
+                        <textarea class="form-textarea" id="actual" rows="2"
+                            placeholder="e.g. The 'Save' button clicked but nothing happened. Expected a success toast."></textarea>
+
+                        <label class="form-label"
+                            style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">Reproduction
+                            Steps
+                            (Optional override)</label>
+                        <textarea class="form-textarea" id="customSteps" rows="2"
+                            placeholder="Only use this if you did something different than the 'Manual Guide'.&#10;1. Clicked X&#10;2. Then clicked Y"></textarea>
+
+                        <label class="form-label"
+                            style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem;">Console Logs /
+                            Technical Data</label>
+                        <input class="form-input" id="errors"
+                            placeholder="Paste error codes, request IDs, or console output here">
+
+                        <div style="display:flex; justify-content:flex-end; margin-top:0.5rem;">
+                            <button class="btn btn-primary" id="saveBugBtn" style="width:100%;" onclick="saveBug()">Save
+                                / Update
+                                Bug</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: PREVIEW -->
+            <div class="card" style="height: 100%;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 0.5rem;">
+                    <label class="form-label">Markdown Report</label>
+                    <button class="btn btn-primary" onclick="copyToClipboard()">Copy Report</button>
+                </div>
+                <div class="code-preview" id="previewArea"></div>
+            </div>
+        </div>
+
+        <script>
+            const testCases = [
+                // SCENARIO 0: ADMIN SETUP (PRE-REQUISITES)
+                {
+                    id: '0.1', title: 'Create Test Users', category: 'Scenario 0: Admin Setup',
+                    desc: 'Create the three required test users in ReceptionBee.',
+                    ref: '<b>Step 1: Single Module User</b><br>1. Login as carbon@stage.com -> ReceptionBee -> Settings -> Team<br>2. Create "QA SingleModule" (qa.single@stage.com)<br>3. Assign: Employee, CK Florence, RecruitBee ONLY<br><b>Step 2: Multi Module User</b><br>4. Create "QA MultiModule" (qa.multi@stage.com)<br>5. Assign: Employee, Carbon Tech, RecruitBee + ReceptionBee<br><b>Step 3: Admin User</b><br>6. Create "QA Admin" (qa.admin@stage.com)<br>7. Assign: Admin, Hoodz Phoenix + Tucson, All Modules',
+                    checkpoints: ['All 3 users created successfully', 'Invite emails received', 'Module permissions verification passed', 'Organization assignments correct'],
+                    sql: "SELECT email, role, status FROM users WHERE email LIKE 'qa.%@stage.com';"
+                },
+                {
+                    id: '0.2', title: 'Connect Calendars', category: 'Scenario 0: Admin Setup',
+                    desc: 'Connect Google Calendar for all test users.',
+                    ref: '<b>For EACH test user (Single, Multi, Admin):</b><br>1. Login as the user<br>2. Settings -> Calendar -> Connect Google Calendar<br>3. Allow permissions<br>4. Verify redirect back to app',
+                    checkpoints: ['qa.single connected', 'qa.multi connected', 'qa.admin connected', 'Status shows "Connected" (Green Badge)', 'Expiration date is in future'],
+                    sql: "SELECT user_id, email, is_active, expires_at FROM integrations WHERE integration_type = 'google_calendar';"
+                },
+                {
+                    id: '0.3', title: 'Set Default Recruiter', category: 'Scenario 0: Admin Setup',
+                    desc: 'Assign default recruiter for interview routing.',
+                    ref: '1. Login as Admin (carbon@stage.com)<br>2. ReceptionBee -> Settings -> Team<br>3. Edit qa.single@stage.com<br>4. "Default Recruiter for Organizations section"<br>5. Check "Comfort Keepers Florence"<br>6. Save',
+                    checkpoints: ['Checkbox saves state', 'User is now Default Recruiter for CK Florence'],
+                    sql: "SELECT * FROM module_user_settings WHERE settings->'default_recruiter_for_orgs' IS NOT NULL;"
+                },
+
+                // SCENARIO 1: SINGLE MODULE
+                {
+                    id: '1.1', title: 'Login Flow', category: 'Scenario 1: Single Module',
+                    desc: 'Single-module users skip the module selector.',
+                    ref: '1. Logout if logged in (click your avatar → Logout)<br>2. Navigate to https://app.wrkrbee.ai/login<br>3. Enter credentials: qa.single@stage.com / [staging password]<br>4. Click Login<br>5. Observe where you land',
+                    checkpoints: ['Redirects to https://recruit.wrkrbee.ai/admin', 'NO module selector shown', 'Header shows "RecruitBee" logo', 'User avatar shows qa.single@stage.com', 'Browser console has ZERO red errors'],
+                    sql: null
+                },
+                {
+                    id: '1.2', title: 'Full Recruiting Workflow', category: 'Scenario 1: Single Module',
+                    desc: 'The complete journey from application → hire.',
+                    ref: '<b>Step 1: Review Application</b><br>1. Navigate to Applications → New Applications<br>2. Click on application<br><b>Step 2: Pre-Interview</b><br>3. Change Status to "Pre-Interview"<br>4. Verify SMS sent<br><b>Step 3: Book Pre-Interview (Incognito)</b><br>5. Open Incognito → Paste SMS link<br>6. Book time slot<br><b>Step 5: Live Interview</b><br>7. Change Status to "Live Interview"<br><b>Step 6: Book Live Interview (Incognito)</b><br>8. Open Incognito → Paste SMS link<br>9. Book time slot (Verify Full Address shown)',
+                    checkpoints: ['SMS received within 30s (Pre-Interview)', 'Candidate booking page loads weekdays only', 'Calendar event created on recruiter calendar', 'SMS received within 30s (Live Interview)', 'Live Interview booking shows FULL ADDRESS', 'No "Google Meet" link on event'],
+                    sql: "SELECT organization_id, first_name, last_name FROM applications WHERE id = 'abc-123-xyz';"
+                },
+                {
+                    id: '1.3', title: 'Multi-Tenant Security Check', category: 'Scenario 1: Single Module',
+                    desc: 'Users can ONLY see data from their own organization.',
+                    ref: '1. Login as qa.single@stage.com<br>2. Navigate to Applications list<br>3. Count visible applications<br>4. Open Console (F12)<br>5. Try to fetch other org data via API or Console',
+                    checkpoints: ['API returns 403 Forbidden or 404', 'Applications list shows ONLY CK Florence candidates', 'Cannot view/edit other org applications'],
+                    sql: "SELECT id FROM applications WHERE organization_id = '[hoodz org-id]' LIMIT 1;"
+                },
+
+                // SCENARIO 2: MULTI MODULE
+                {
+                    id: '2.1', title: 'Login Flow - Module Selector', category: 'Scenario 2: Multi Module',
+                    desc: 'Multi-module users see the module selector.',
+                    ref: '1. Logout<br>2. Login as qa.multi@stage.com<br>3. Observe landing page',
+                    checkpoints: ['Redirects to /select-module', 'Tiles shown for RecruitBee and ReceptionBee', 'Clicking RecruitBee -> Redirects to dashboard'],
+                    sql: null
+                },
+                {
+                    id: '2.2', title: 'Cross-Module Navigation', category: 'Scenario 2: Multi Module',
+                    desc: 'Switching between modules preserves session.',
+                    ref: '1. Login as qa.multi@stage.com<br>2. Select RecruitBee<br>3. Click "Switch Module" or go to app.wrkrbee.ai<br>4. Select ReceptionBee<br>5. Switch back to RecruitBee',
+                    checkpoints: ['Session persists (no re-login)', 'Each module shows correct data', 'Navigation takes < 2s', 'Cookie wrkrbee-auth remains valid'],
+                    sql: null
+                },
+                {
+                    id: '2.3', title: 'Recruiting Workflow (Multi)', category: 'Scenario 2: Multi Module',
+                    desc: 'Repeat Test 1.2 as multi-module user.',
+                    ref: '1. Repeat Test Scenario 1.2 exactly as qa.multi@stage.com',
+                    checkpoints: ['Can access recruiting workflow', 'Calendar routing works', 'SMS/Email show correct corporate brand'],
+                    sql: null
+                },
+
+                // SCENARIO 3: ADMIN
+                {
+                    id: '3.1', title: 'Organization Switching', category: 'Scenario 3: Admin',
+                    desc: 'Switching between franchise locations.',
+                    ref: '1. Login as qa.admin@stage.com<br>2. Select RecruitBee<br>3. Click organization dropdown (top-right)<br>4. Select "Hoodz Tucson"',
+                    checkpoints: ['Dropdown shows all locations (Phoenix, Tucson)', 'Active org updates immediately', 'Applications list refreshes with Tucson data', 'Job postings refresh'],
+                    sql: "SELECT organization_id, COUNT(*) FROM applications WHERE organization_id = '[tucson-org-id]' GROUP BY organization_id;"
+                },
+                {
+                    id: '3.2', title: 'User Management', category: 'Scenario 3: Admin',
+                    desc: 'Admins can add/edit/delete users.',
+                    ref: '1. ReceptionBee -> Settings -> Team<br>2. Add New User (test.employee@stage.com)<br>3. Edit User -> Change Role to Admin<br>4. Deactivate User -> Toggle Active OFF',
+                    checkpoints: ['User appears in team list', 'Invite email sent', 'Role change saves immediately', 'Deactivated user cannot login'],
+                    sql: null
+                },
+                {
+                    id: '3.3', title: 'Settings Management', category: 'Scenario 3: Admin',
+                    desc: 'Settings persist after save.',
+                    ref: '<b>SMS Templates</b><br>1. Settings -> SMS Templates -> Edit "Pre-Interview"<br>2. Add {{candidate_name}} and save<br>3. Send Test SMS<br><b>Location Settings</b><br>4. Settings -> Location Settings<br>5. Verify Dropdown appears for Multi-Loc org',
+                    checkpoints: ['Template saves successfully', 'Test SMS received with variables replaced', 'Location dropdown appears for Hoodz', 'Location dropdown HIDDEN for single-loc org'],
+                    sql: null
+                },
+                {
+                    id: '3.4', title: 'Job Duplication', category: 'Scenario 3: Admin',
+                    desc: 'Duplicate a job and assign to different location.',
+                    ref: '1. Jobs -> Select "Caregiver" -> Duplicate<br>2. Edit Job -> Change Location to "Hoodz Tucson"<br>3. Save',
+                    checkpoints: ['Job duplicated with "(Copy)" suffix', 'Organization change saves', 'Job appears in Tucson list', 'Application questions migrated correctly'],
+                    sql: "SELECT jp.id, jp.organization_id as job, jq.organization_id as quest FROM job_postings jp JOIN job_questions jq ON jq.job_posting_id = jp.id WHERE jp.title LIKE '%(Copy)%';"
+                }
+            ];
+
+            let activeId = null;
+            let activeBugIndex = -1;
+            let db = JSON.parse(localStorage.getItem('rb_qa')) || {};
+
+            function render() {
+                const list = document.getElementById('testList');
+                list.innerHTML = '';
+                let lastCat = '';
+                testCases.forEach(t => {
+                    if (t.category !== lastCat) {
+                        list.innerHTML += `<div class="group-title">${t.category}</div>`;
+                        lastCat = t.category;
+                    }
+                    const res = db[t.id] || { status: 'Not Run' };
+                    const cls = res.status === 'Pass' ? 'pass' : (res.status === 'Fail' ? 'fail' : (res.status === 'Skip' ? 'skip' : ''));
+                    list.innerHTML += `<div class="test-item ${activeId === t.id ? 'active' : ''}" onclick="select('${t.id}')">
+                    <span class="test-name">${t.id} ${t.title}</span>
+                    <span class="status-badge ${cls}">${res.status}</span>
+                </div>`;
+                });
+            }
+
+            function select(id) {
+                activeId = id;
+                activeBugIndex = -1; // Reset to new bug mode
+                const t = testCases.find(tc => tc.id === id);
+                document.getElementById('currentTestTitle').innerText = `${t.id}: ${t.title}`;
+                document.getElementById('currentTestDesc').innerText = t.desc;
+                document.getElementById('mainContent').style.display = 'grid';
+                document.getElementById('statusToggles').style.display = 'flex';
+
+                const savedRef = db[id]?.customRef;
+                document.getElementById('referenceContent').innerHTML = savedRef || t.ref.replace(/\n/g, '<br>');
+
+                if (t.sql) {
+                    document.getElementById('sqlSection').style.display = 'block';
+                    document.getElementById('sqlContent').innerText = t.sql;
+                } else {
+                    document.getElementById('sqlSection').style.display = 'none';
+                }
+
+                const checkContainer = document.getElementById('visualCheckpoints');
+                checkContainer.innerHTML = '';
+                t.checkpoints.forEach((cp, i) => {
+                    const key = `cp_${id}_${i}`;
+                    const checked = db[id]?.checks?.[key] ? 'checked' : '';
+                    checkContainer.innerHTML += `<div class="checklist-item">
+                    <input type="checkbox" id="${key}" ${checked} onchange="toggleCp('${key}')"> <label for="${key}">${cp}</label>
+                </div>`;
+                });
+
+                // Migration check: If old .bug exists, move to .bugs array
+                if (db[id] && db[id].bug && !db[id].bugs) {
+                    db[id].bugs = [db[id].bug];
+                    delete db[id].bug;
+                    save();
+                }
+
+                renderBugs();
+                clearBugForm();
+
+                // If there are bugs, maybe select the first one? Or leave form empty for new.
+                // Let's leave form empty (New Bug mode) but show list.
+
+                updateBtns(db[id]?.status || '');
+                render();
+                md();
+            }
+
+            function renderBugs() {
+                const list = document.getElementById('bugList');
+                list.innerHTML = '';
+                const bugs = db[activeId]?.bugs || [];
+
+                bugs.forEach((b, i) => {
+                    const div = document.createElement('div');
+                    div.style.padding = '0.6rem';
+                    div.style.marginBottom = '0.5rem';
+                    // Active state styling
+                    const isActive = activeBugIndex === i;
+                    div.style.background = isActive ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255,255,255,0.03)';
+                    div.style.border = isActive ? '1px solid var(--accent-primary)' : '1px solid transparent';
+                    div.style.borderRadius = '6px';
+                    div.style.cursor = 'pointer';
+                    div.style.transition = 'all 0.2s';
+
+                    div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div style="flex:1;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+                                <span style="font-weight:600; font-size:0.8rem; color:var(--text-main);">#${i + 1}</span>
+                                <span style="font-size:0.65rem; padding:0.1rem 0.4rem; border-radius:4px; 
+                                      background:${b.severity === 'CRITICAL' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)'};
+                                      color:${b.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--text-muted)'}; font-weight:600;">${b.severity}</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.2;">${b.actual?.substring(0, 45) || 'Untitled Bug'}...</div>
+                        </div>
+                        <button class="btn" style="padding:0.1rem 0.4rem; font-size:0.7rem; color:var(--text-muted); border:none; background:transparent;" 
+                                onclick="deleteBug(event, ${i})">✕</button>
+                    </div>`;
+
+                    div.onclick = () => loadBug(i);
+                    list.appendChild(div);
+                });
+
+                // Update specific button text
+                const saveBtn = document.getElementById('saveBugBtn');
+                if (saveBtn) saveBtn.innerText = activeBugIndex === -1 ? 'Save New Bug' : 'Update Bug #' + (activeBugIndex + 1);
+            }
+
+            function deleteBug(e, i) {
+                e.stopPropagation();
+                if (!confirm('Delete this bug report?')) return;
+
+                db[activeId].bugs.splice(i, 1);
+
+                // Adjust active index logic
+                if (activeBugIndex === i) {
+                    activeBugIndex = -1; // Reset to new bug mode
+                    clearBugForm();
+                } else if (activeBugIndex > i) {
+                    activeBugIndex--; // Shift index down
+                }
+
+                // If no bugs left, we don't automatically change status back to 'Not Run' 
+                // because they might want to add a fresh one, but we save the empty list.
+
+                save();
+                renderBugs();
+                md();
+            }
+
+            function loadBug(i) {
+                activeBugIndex = i;
+                const b = db[activeId].bugs[i];
+                document.getElementById('severity').value = b.severity;
+                document.getElementById('env').value = b.env;
+                document.getElementById('actual').value = b.actual;
+                document.getElementById('customSteps').value = b.customSteps || '';
+                document.getElementById('errors').value = b.errors || '';
+                renderBugs(); // This will trigger the button text update
+            }
+
+            function addNewBug() {
+                activeBugIndex = -1;
+                clearBugForm();
+                renderBugs();
+            }
+
+            function clearBugForm() {
+                document.getElementById('severity').value = 'HIGH';
+                document.getElementById('env').value = 'Staging / Chrome';
+                document.getElementById('actual').value = '';
+                document.getElementById('customSteps').value = '';
+                document.getElementById('errors').value = '';
+            }
+
+            function saveBug() {
+                if (!activeId) return;
+                if (!db[activeId]) db[activeId] = {};
+                if (!db[activeId].bugs) db[activeId].bugs = [];
+
+                const bugData = {
+                    severity: document.getElementById('severity').value,
+                    env: document.getElementById('env').value,
+                    actual: document.getElementById('actual').value,
+                    customSteps: document.getElementById('customSteps').value,
+                    errors: document.getElementById('errors').value,
+                    timestamp: new Date().toISOString()
+                };
+
+                if (activeBugIndex === -1) {
+                    // Create New
+                    db[activeId].bugs.push(bugData);
+                    activeBugIndex = db[activeId].bugs.length - 1; // Select it
+                } else {
+                    // Update Existing
+                    db[activeId].bugs[activeBugIndex] = bugData;
+                }
+
+                // If adding a bug, assume Fail
+                if (db[activeId].status !== 'Fail') setStatus('Fail');
+
+                save();
+                renderBugs();
+                md();
+            }
+
+            function toggleCp(key) {
+                if (!db[activeId]) db[activeId] = { checks: {} };
+                if (!db[activeId].checks) db[activeId].checks = {};
+                db[activeId].checks[key] = document.getElementById(key).checked;
+                save();
+            }
+
+            function setStatus(s) {
+                if (!activeId) return;
+                if (!db[activeId]) db[activeId] = {};
+                db[activeId].status = s;
+                updateBtns(s);
+                save();
+                render();
+                md();
+            }
+
+            function updateBtns(s) {
+                const b = document.querySelectorAll('.toggle-btn');
+                b.forEach(btn => {
+                    btn.classList.remove('selected-pass', 'selected-fail', 'selected-skip');
+                    if (btn.innerText === s) btn.classList.add(`selected-${s.toLowerCase()}`);
+                });
+            }
+
+            function save() { localStorage.setItem('rb_qa', JSON.stringify(db)); }
+            function clearStorage() { if (confirm('Clear all?')) { localStorage.clear(); location.reload(); } }
+
+            function md() {
+                if (!activeId) return;
+                const res = db[activeId];
+                if (res?.status !== 'Fail') {
+                    document.getElementById('previewArea').innerText = `## Test ${activeId}: ${res?.status || 'Not Run'}\n\nAll checkpoints verified manually.`;
+                    return;
+                }
+                const t = testCases.find(tc => tc.id === activeId);
+                const bugs = res.bugs || [];
+
+                if (bugs.length === 0) {
+                    document.getElementById('previewArea').innerText = `## Bug Report: ${t.title}\n\nNo bugs logged yet. Use the form to add one.`;
+                    return;
+                }
+
+                let out = `## Bug Report: ${t.title}\n\n`;
+                out += `**Test Case**: ${t.id}\n**Total Issues**: ${bugs.length}\n\n`;
+
+                bugs.forEach((b, i) => {
+                    out += `### Issue #${i + 1}\n`;
+                    out += `**Severity**: ${b.severity} | **Environment**: ${b.env}\n\n`;
+
+                    out += `**Steps to Reproduce**:\n`;
+                    const refSource = db[activeId]?.customRef || t.ref;
+                    const cleanRef = refSource.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, "");
+                    out += b.customSteps ? b.customSteps : cleanRef;
+                    out += `\n\n`;
+
+                    out += `**Actual Result**:\n${b.actual}\n\n`;
+                    if (b.errors) out += `**Technical Info**:\n\`\`\`\n${b.errors}\n\`\`\`\n`;
+                    out += `\n---\n\n`;
+                });
+
+                document.getElementById('previewArea').innerText = out;
+            }
+
+            // Removed auto-save listeners on inputs to support explicit "Save Bug" flow
+            // ['severity', 'env', 'actual', 'customSteps', 'errors'].forEach...
+
+            function copySql() { navigator.clipboard.writeText(document.getElementById('sqlContent').innerText); }
+            function copyToClipboard() { navigator.clipboard.writeText(document.getElementById('previewArea').innerText); }
+            function exportResults() {
+                let s = `# QA Summary ${new Date().toLocaleDateString()}\n\n| ID | Status | Notes |\n|---|---|---|\n`;
+                testCases.forEach(t => { const r = db[t.id] || { status: 'NR' }; s += `| ${t.id} | ${r.status} | ${r.bug?.actual || ''} |\n`; });
+                navigator.clipboard.writeText(s);
+                alert('Summary copied to clipboard!');
+            }
+
+            function toggleEditGuide() {
+                if (!activeId) return;
+                document.getElementById('referenceContent').style.display = 'none';
+                document.getElementById('editGuideBtn').style.display = 'none';
+                const area = document.getElementById('editGuideArea');
+                area.style.display = 'block';
+                document.getElementById('editGuideActions').style.display = 'flex';
+
+                // Populate with existing or custom
+                const t = testCases.find(tc => tc.id === activeId);
+                const savedRef = db[activeId]?.customRef;
+                area.value = (savedRef || t.ref).replace(/<br>/g, '\n').replace(/<b>/g, '**').replace(/<\/b>/g, '**');
+            }
+
+            function cancelEditGuide() {
+                document.getElementById('referenceContent').style.display = 'block';
+                document.getElementById('editGuideBtn').style.display = 'block';
+                document.getElementById('editGuideArea').style.display = 'none';
+                document.getElementById('editGuideActions').style.display = 'none';
+            }
+
+            function saveGuide() {
+                if (!activeId) return;
+                const newText = document.getElementById('editGuideArea').value;
+                // Convert markdown-ish back to simple HTML for display if needed, or just save raw
+                // We'll save raw and convert newlines to <br> for display
+                if (!db[activeId]) db[activeId] = {};
+                // Convert ** to <b> for display compatibility
+                let html = newText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                db[activeId].customRef = html;
+                save();
+
+                // Update display
+                document.getElementById('referenceContent').innerHTML = html;
+                cancelEditGuide();
+                md(); // update report
+            }
+            function downloadBackup() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `recruitbee_qa_backup_${new Date().toISOString().slice(0, 10)}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            }
+
+            function uploadBackup(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const importedDb = JSON.parse(e.target.result);
+                        db = importedDb;
+                        save();
+                        location.reload();
+                    } catch (err) {
+                        alert("Error reading file. Make sure it is a valid RecruitBee QA backup.");
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            render();
+        </script>
+</body>
+
+</html>
