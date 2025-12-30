@@ -51,8 +51,8 @@ export default function Dashboard() {
       return matchesSearch && matchesStatus && matchesSeverity;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.updated_at).getTime();
-      const dateB = new Date(b.updated_at).getTime();
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
@@ -117,10 +117,10 @@ export default function Dashboard() {
             <button
               onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
               className="btn btn-secondary flex items-center gap-2"
-              title="Sort by Update"
+              title="Sort by Creation Date"
             >
               <ArrowUpDown size={14} />
-              {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+              {sortOrder === 'desc' ? 'Newest Logged' : 'Oldest Logged'}
             </button>
           </div>
 
@@ -131,7 +131,7 @@ export default function Dashboard() {
                   <th className="px-6 py-3 w-40">{tab === 'bugs' ? 'Severity' : 'Priority'}</th>
                   <th className="px-6 py-3">Title</th>
                   <th className="px-6 py-3 w-40">Status</th>
-                  <th className="px-6 py-3 w-40 text-right">Updated</th>
+                  <th className="px-6 py-3 w-40 text-right">Created</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
@@ -150,7 +150,7 @@ export default function Dashboard() {
                       <td className="px-6 py-4 font-medium">{item.title}</td>
                       <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
                       <td className="px-6 py-4 text-right text-slate-500">
-                        {new Date(item.updated_at).toLocaleDateString()}
+                        {new Date(item.created_at).toLocaleDateString()}
                       </td>
                     </tr>
                   ))
