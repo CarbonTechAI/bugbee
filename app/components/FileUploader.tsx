@@ -82,7 +82,7 @@ export default function FileUploader({ onFilesChange, title = 'Attachments' }: F
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 {files.map((file, idx) => (
                     <div key={idx} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700 flex flex-col">
                         <button

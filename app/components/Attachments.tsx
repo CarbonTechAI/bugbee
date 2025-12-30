@@ -168,7 +168,7 @@ export default function Attachments({ itemId, itemType = 'bug', readOnly = false
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 {attachments.map(att => (
                     <div key={att.id} className="relative group bg-slate-800 rounded overflow-hidden border border-slate-700 flex flex-col">
                         {!readOnly && (
