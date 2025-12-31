@@ -268,7 +268,7 @@ ${item.console_logs}
                                     <div><label className="label">Environment</label><div className="text-sm">{item.environment}</div></div>
                                 )}
                                 {item.console_logs && (
-                                    <div><label className="label">Console Logs</label><pre className="bg-black p-3 rounded text-xs overflow-x-auto">{item.console_logs}</pre></div>
+                                    <div><label className="label">Console Logs</label><pre className="bg-black p-3 rounded text-xs whitespace-pre-wrap break-all">{item.console_logs}</pre></div>
                                 )}
                             </>
                         ) : (
