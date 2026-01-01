@@ -23,6 +23,12 @@ export default function ItemDetail() {
     const [editData, setEditData] = useState<any>(null);
     const [hasUnread, setHasUnread] = useState(false);
     const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
+    const [userName, setUserName] = useState('');
+
+    useEffect(() => {
+        const stored = localStorage.getItem('bugbee_username');
+        if (stored) setUserName(stored);
+    }, []);
 
     useEffect(() => {
         if (id && type) fetchItem();
@@ -91,9 +97,15 @@ export default function ItemDetail() {
     };
 
     const handleUpdate = async (newStatus?: string) => {
+        if (!userName.trim()) {
+            alert('Please enter your name to make changes');
+            return;
+        }
+        localStorage.setItem('bugbee_username', userName);
+
         setUpdating(true);
         try {
-            const body: any = { type, note: comment, user_name: 'User' }; // Ideally parse user from token or prompt, but v1 is anon
+            const body: any = { type, note: comment, user_name: userName }; // Ideally parse user from token or prompt, but v1 is anon
             if (newStatus) body.status = newStatus;
             else if (!comment) return; // Don't submit empty if no status change
 
@@ -284,7 +296,14 @@ ${item.console_logs}
 
             <div className="space-y-6">
                 <div className="card space-y-4">
-                    <label className="label">Actions</label>
+                    <label className="label">Your Name</label>
+                    <input
+                        className="input w-full"
+                        value={userName}
+                        onChange={e => setUserName(e.target.value)}
+                        placeholder="Enter your name..."
+                    />
+                    <label className="label mt-2">Status</label>
                     <select
                         className="input w-full"
                         value={item.status}
@@ -306,7 +325,7 @@ ${item.console_logs}
                             value={comment}
                             onChange={e => setComment(e.target.value)}
                         />
-                        <button onClick={() => handleUpdate()} disabled={!comment || updating} className="btn btn-primary w-full text-sm">
+                        <button onClick={() => handleUpdate()} disabled={!comment || updating || !userName} className="btn btn-primary w-full text-sm">
                             Post Comment
                         </button>
                     </div>
