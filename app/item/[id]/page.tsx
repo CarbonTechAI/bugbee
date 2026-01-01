@@ -24,7 +24,6 @@ export default function ItemDetail() {
     const [editData, setEditData] = useState<any>(null);
     const [hasUnread, setHasUnread] = useState(false);
     const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
-    const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
     const { userName } = useUser();
 
 
