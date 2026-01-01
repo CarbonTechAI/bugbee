@@ -14,7 +14,6 @@ export default function ReportFeature() {
         title: '',
         priority: 'important',
         description: '',
-        description: '',
         requester_email: ''
     });
 
