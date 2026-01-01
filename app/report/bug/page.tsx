@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUploader from '../../components/FileUploader';
+import { useUser } from '../../context/UserContext';
 
 export default function ReportBug() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
+    const { userName } = useUser();
     const [formData, setFormData] = useState({
         title: '',
         severity: 'critical',
@@ -16,7 +18,8 @@ export default function ReportBug() {
         actual_result: '',
         reproduction_steps: '',
         console_logs: '',
-        reporter_name: '',
+        reproduction_steps: '',
+        console_logs: '',
         reporter_email: ''
     });
 
@@ -40,6 +43,12 @@ export default function ReportBug() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!userName.trim()) {
+            alert('Please enter your name in the header to report a bug');
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -50,7 +59,7 @@ export default function ReportBug() {
                     'Content-Type': 'application/json',
                     'x-bugbee-token': localStorage.getItem('bugbee_token') || '',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...formData, reporter_name: userName }),
             });
 
             if (!res.ok) throw new Error('Failed to submit');
@@ -183,15 +192,6 @@ export default function ReportBug() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-slate-700 pt-4">
-                    <div>
-                        <label className="label">Your Name (Optional)</label>
-                        <input
-                            name="reporter_name"
-                            value={formData.reporter_name}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </div>
                     <div>
                         <label className="label">Your Email (Optional)</label>
                         <input

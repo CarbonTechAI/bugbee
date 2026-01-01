@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUploader from '../../components/FileUploader';
+import { useUser } from '../../context/UserContext';
 
 export default function ReportFeature() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
+    const { userName } = useUser();
     const [formData, setFormData] = useState({
         title: '',
         priority: 'important',
         description: '',
-        requester_name: '',
+        description: '',
         requester_email: ''
     });
 
@@ -36,6 +38,12 @@ export default function ReportFeature() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!userName.trim()) {
+            alert('Please enter your name in the header to request a feature');
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -46,7 +54,7 @@ export default function ReportFeature() {
                     'Content-Type': 'application/json',
                     'x-bugbee-token': localStorage.getItem('bugbee_token') || '',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...formData, requester_name: userName }),
             });
 
             if (!res.ok) throw new Error('Failed to submit');
@@ -130,15 +138,6 @@ export default function ReportFeature() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-slate-700 pt-4">
-                    <div>
-                        <label className="label">Your Name (Optional)</label>
-                        <input
-                            name="requester_name"
-                            value={formData.requester_name}
-                            onChange={handleChange}
-                            className="input"
-                        />
-                    </div>
                     <div>
                         <label className="label">Your Email (Optional)</label>
                         <input
