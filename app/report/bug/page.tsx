@@ -18,8 +18,6 @@ export default function ReportBug() {
         actual_result: '',
         reproduction_steps: '',
         console_logs: '',
-        reproduction_steps: '',
-        console_logs: '',
         reporter_email: ''
     });
 
