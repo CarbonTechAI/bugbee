@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import StatusBadge from '../../components/StatusBadge';
 import Attachments from '../../components/Attachments';
+import { useUser } from '../../context/UserContext';
 import { Copy, ThumbsUp } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -23,12 +24,9 @@ export default function ItemDetail() {
     const [editData, setEditData] = useState<any>(null);
     const [hasUnread, setHasUnread] = useState(false);
     const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
-    const [userName, setUserName] = useState('');
+    const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
+    const { userName } = useUser();
 
-    useEffect(() => {
-        const stored = localStorage.getItem('bugbee_username');
-        if (stored) setUserName(stored);
-    }, []);
 
     useEffect(() => {
         if (id && type) fetchItem();
@@ -98,10 +96,9 @@ export default function ItemDetail() {
 
     const handleUpdate = async (newStatus?: string) => {
         if (!userName.trim()) {
-            alert('Please enter your name to make changes');
+            alert('Please enter your name in the header to make changes');
             return;
         }
-        localStorage.setItem('bugbee_username', userName);
 
         setUpdating(true);
         try {
@@ -296,14 +293,7 @@ ${item.console_logs}
 
             <div className="space-y-6">
                 <div className="card space-y-4">
-                    <label className="label">Your Name</label>
-                    <input
-                        className="input w-full"
-                        value={userName}
-                        onChange={e => setUserName(e.target.value)}
-                        placeholder="Enter your name..."
-                    />
-                    <label className="label mt-2">Status</label>
+                    <label className="label">Actions</label>
                     <select
                         className="input w-full"
                         value={item.status}
