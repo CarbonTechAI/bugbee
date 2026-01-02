@@ -68,12 +68,13 @@ export default function ReportBug() {
             if (files.length > 0 && bugId) {
                 await Promise.all(
                     files.map(async (file) => {
-                        const formData = new FormData();
-                        formData.append('file', file);
+                        const uploadFormData = new FormData();
+                        uploadFormData.append('file', file);
+                        uploadFormData.append('reporter_name', userName);
                         await fetch(`/api/bugs/${bugId}/attachments`, {
                             method: 'POST',
                             headers: { 'x-bugbee-token': localStorage.getItem('bugbee_token') || '' },
-                            body: formData,
+                            body: uploadFormData,
                         });
                     })
                 );
