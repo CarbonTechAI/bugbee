@@ -1,7 +1,14 @@
 import clsx from 'clsx';
 
-export default function StatusBadge({ status, severity }: { status?: string, severity?: string }) {
+export default function StatusBadge({ status, severity, muted }: { status?: string, severity?: string, muted?: boolean }) {
     if (severity) {
+        if (muted) {
+            return (
+                <span className="px-2 py-0.5 rounded text-xs font-semibold border uppercase whitespace-nowrap bg-slate-700/30 text-slate-600 border-slate-700/50">
+                    {severity}
+                </span>
+            );
+        }
         const colors: Record<string, string> = {
             critical: 'bg-red-500/20 text-red-500 border-red-500/30',
             high: 'bg-orange-500/20 text-orange-500 border-orange-500/30',

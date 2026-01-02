@@ -146,7 +146,7 @@ export default function Dashboard() {
                       onClick={() => router.push(`/item/${item.id}?type=${tab === 'bugs' ? 'bug' : 'feature'}`)}
                       className="hover:bg-slate-700/50 cursor-pointer transition-colors"
                     >
-                      <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} /></td>
+                      <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} muted={item.status?.toLowerCase() === 'closed'} /></td>
                       <td className={clsx("px-6 py-4 font-medium", item.status?.toLowerCase() === 'closed' && "line-through text-slate-500")}>{item.title}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
