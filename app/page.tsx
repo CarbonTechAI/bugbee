@@ -147,7 +147,7 @@ export default function Dashboard() {
                       className="hover:bg-slate-700/50 cursor-pointer transition-colors"
                     >
                       <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} /></td>
-                      <td className={clsx("px-6 py-4 font-medium", item.status === 'Closed' && "line-through text-slate-500")}>{item.title}</td>
+                      <td className={clsx("px-6 py-4 font-medium", item.status?.toLowerCase() === 'closed' && "line-through text-slate-500")}>{item.title}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <StatusBadge status={item.status} />
