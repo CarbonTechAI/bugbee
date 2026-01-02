@@ -85,7 +85,10 @@ export default function Attachments({ itemId, itemType = 'bug', readOnly = false
             const endpoint = itemType === 'bug' ? 'bugs' : 'features';
             const res = await fetch(`/api/${endpoint}/${itemId}/attachments/${attachmentId}`, {
                 method: 'DELETE',
-                headers: { 'x-bugbee-token': token || '' }
+                headers: {
+                    'x-bugbee-token': token || '',
+                    'x-bugbee-user': userName
+                }
             });
 
             if (res.ok) {

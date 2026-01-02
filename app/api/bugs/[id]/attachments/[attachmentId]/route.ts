@@ -52,7 +52,7 @@ export async function DELETE(
             item_id: id,
             action: 'attachment_removed',
             old_value: attachment.file_name,
-            actor_name: 'Admin' // or get from headers if passed
+            actor_name: req.headers.get('x-bugbee-user') || 'Anonymous'
         });
 
         return NextResponse.json({ success: true });
