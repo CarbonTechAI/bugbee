@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Trash2, Image as ImageIcon, X, Upload, Loader2, Paperclip } from 'lucide-react';
 import clsx from 'clsx';
 
+import { useUser } from '../context/UserContext';
+
 interface Attachment {
     id: string;
     file_name: string;
@@ -18,6 +20,7 @@ export default function Attachments({ itemId, itemType = 'bug', readOnly = false
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [viewingImage, setViewingImage] = useState<string | null>(null);
+    const { userName } = useUser();
 
     const fetchAttachments = useCallback(async () => {
         try {
@@ -48,8 +51,7 @@ export default function Attachments({ itemId, itemType = 'bug', readOnly = false
 
         const formData = new FormData();
         formData.append('file', file);
-        // We could ask for user name via a prompt or context, defaulting to Anonymous for now
-        // leveraging the auth token for permissions check mostly.
+        formData.append('reporter_name', userName);
 
         try {
             const token = localStorage.getItem('bugbee_token');
