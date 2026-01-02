@@ -166,7 +166,10 @@ export default function Dashboard() {
                         {new Date(item.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right text-slate-500">
-                        {new Date(item.last_activity_at).toLocaleDateString()}
+                        <div className="flex flex-col items-end">
+                          <span>{new Date(item.last_activity_at).toLocaleDateString()}</span>
+                          <span className="text-[10px] text-slate-600">by {item.last_activity_by}</span>
+                        </div>
                       </td>
                     </tr>
                   ))

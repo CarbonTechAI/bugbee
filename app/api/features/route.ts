@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     // Fetch all activity for last activity timestamp
     const { data: allActivity } = await supabaseAdmin
         .from('activity_log')
-        .select('item_id, created_at')
+        .select('item_id, created_at, actor_name')
         .eq('item_type', 'feature')
         .order('created_at', { ascending: false });
 
@@ -39,16 +39,23 @@ export async function GET(req: NextRequest) {
     if (allActivity) {
         for (const a of allActivity) {
             if (!activityMap.has(a.item_id)) {
-                activityMap.set(a.item_id, a.created_at);
+                activityMap.set(a.item_id, {
+                    date: a.created_at,
+                    user: a.actor_name || 'Anonymous'
+                });
             }
         }
     }
 
-    const enrichedFeatures = features.map(f => ({
-        ...f,
-        last_comment_at: commentMap.get(f.id) || null,
-        last_activity_at: activityMap.get(f.id) || f.created_at
-    }));
+    const enrichedFeatures = features.map(f => {
+        const activity = activityMap.get(f.id);
+        return {
+            ...f,
+            last_comment_at: commentMap.get(f.id) || null,
+            last_activity_at: activity ? activity.date : f.created_at,
+            last_activity_by: activity ? activity.user : (f.requester_name || 'Anonymous')
+        };
+    });
 
     return NextResponse.json(enrichedFeatures);
 }
