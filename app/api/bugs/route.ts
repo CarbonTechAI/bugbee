@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     // Fetch latest comments
-    // optimization: filtering by item_type likely helps index usage
     const { data: comments } = await supabaseAdmin
         .from('activity_log')
         .select('item_id, created_at')
@@ -23,7 +22,6 @@ export async function GET(req: NextRequest) {
 
     const commentMap = new Map();
     if (comments) {
-        // Since it's ordered by desc, the first one encountered for an ID is the latest
         for (const c of comments) {
             if (!commentMap.has(c.item_id)) {
                 commentMap.set(c.item_id, c.created_at);
@@ -31,9 +29,26 @@ export async function GET(req: NextRequest) {
         }
     }
 
+    // Fetch all activity for last activity timestamp
+    const { data: allActivity } = await supabaseAdmin
+        .from('activity_log')
+        .select('item_id, created_at')
+        .eq('item_type', 'bug')
+        .order('created_at', { ascending: false });
+
+    const activityMap = new Map();
+    if (allActivity) {
+        for (const a of allActivity) {
+            if (!activityMap.has(a.item_id)) {
+                activityMap.set(a.item_id, a.created_at);
+            }
+        }
+    }
+
     const enrichedBugs = bugs.map(bug => ({
         ...bug,
-        last_comment_at: commentMap.get(bug.id) || null
+        last_comment_at: commentMap.get(bug.id) || null,
+        last_activity_at: activityMap.get(bug.id) || bug.created_at
     }));
 
     return NextResponse.json(enrichedBugs);

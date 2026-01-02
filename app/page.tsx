@@ -132,13 +132,14 @@ export default function Dashboard() {
                   <th className="px-6 py-3">Title</th>
                   <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3 w-40 text-right">Created</th>
+                  <th className="px-6 py-3 w-40 text-right">Last Updated</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {loading ? (
-                  <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">Loading...</td></tr>
+                  <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">Loading...</td></tr>
                 ) : filteredItems.length === 0 ? (
-                  <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">No items found</td></tr>
+                  <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No items found</td></tr>
                 ) : (
                   filteredItems.map(item => (
                     <tr
@@ -163,6 +164,9 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-4 text-right text-slate-500">
                         {new Date(item.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right text-slate-500">
+                        {new Date(item.last_activity_at).toLocaleDateString()}
                       </td>
                     </tr>
                   ))

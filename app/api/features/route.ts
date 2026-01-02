@@ -28,9 +28,26 @@ export async function GET(req: NextRequest) {
         }
     }
 
+    // Fetch all activity for last activity timestamp
+    const { data: allActivity } = await supabaseAdmin
+        .from('activity_log')
+        .select('item_id, created_at')
+        .eq('item_type', 'feature')
+        .order('created_at', { ascending: false });
+
+    const activityMap = new Map();
+    if (allActivity) {
+        for (const a of allActivity) {
+            if (!activityMap.has(a.item_id)) {
+                activityMap.set(a.item_id, a.created_at);
+            }
+        }
+    }
+
     const enrichedFeatures = features.map(f => ({
         ...f,
-        last_comment_at: commentMap.get(f.id) || null
+        last_comment_at: commentMap.get(f.id) || null,
+        last_activity_at: activityMap.get(f.id) || f.created_at
     }));
 
     return NextResponse.json(enrichedFeatures);
