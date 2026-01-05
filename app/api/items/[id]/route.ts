@@ -60,6 +60,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             return NextResponse.json({ error: 'No valid updates provided' }, { status: 400 });
         }
 
+        // Auto-archive logic
+        if (filteredUpdates.status === 'closed') {
+            filteredUpdates.is_archived = true;
+        } else if (filteredUpdates.status) {
+            filteredUpdates.is_archived = false;
+        }
+
         const table = type === 'bug' ? 'bugs' : 'features';
 
         // Get old item state for logging

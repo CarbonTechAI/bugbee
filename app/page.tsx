@@ -5,7 +5,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import StatusBadge from './components/StatusBadge';
 import { useRouter } from 'next/navigation';
-import { Filter, ArrowUpDown } from 'lucide-react';
+import { Filter, ArrowUpDown, Archive } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -63,7 +63,13 @@ export default function Dashboard() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Inbox</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Inbox</h1>
+          <Link href="/archives" className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors bg-slate-800/50 px-2 py-1 rounded border border-slate-800 hover:border-slate-700">
+            <Archive size={12} />
+            View Archives
+          </Link>
+        </div>
         <div className="flex gap-2 bg-slate-800 p-1 rounded-lg">
           <button
             onClick={() => setTab('bugs')}

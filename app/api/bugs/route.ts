@@ -5,9 +5,13 @@ import { validateToken, unauthorizedResponse } from '../../utils/auth';
 export async function GET(req: NextRequest) {
     if (!validateToken(req)) return unauthorizedResponse();
 
+    const { searchParams } = new URL(req.url);
+    const archived = searchParams.get('archived') === 'true';
+
     const { data: bugs, error } = await supabaseAdmin
         .from('bugs')
         .select('*')
+        .eq('is_archived', archived)
         .order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -305,13 +305,17 @@ ${item.console_logs}
                         onChange={(e) => handleUpdate(e.target.value)}
                     >
                         {(type === 'bug'
-                            ? ['open', 'in_progress', 'fixed', 'needs_verification', 'closed']
+                            ? ['open', 'needs_verification', 'reopened', 'closed']
                             : ['open', 'planned', 'in_progress', 'shipped', 'closed']
-                        ).map(s => (
-                            <option key={s} value={s}>
-                                {s.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </option>
-                        ))}
+                        ).map(s => {
+                            let label = s.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            if (s === 'closed') label = 'Closed & Archived';
+                            return (
+                                <option key={s} value={s}>
+                                    {label}
+                                </option>
+                            );
+                        })}
                     </select>
                     <div className="pt-4 border-t border-slate-700">
                         <textarea

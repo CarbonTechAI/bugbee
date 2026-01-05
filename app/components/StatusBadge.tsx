@@ -29,6 +29,7 @@ export default function StatusBadge({ status, severity, muted }: { status?: stri
             fixed: 'bg-green-500/20 text-green-400 border-green-500/30',
             shipped: 'bg-green-500/20 text-green-400 border-green-500/30',
             needs_verification: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+            reopened: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
             closed: 'bg-slate-700/50 text-slate-500 border-slate-700',
         };
         return (
