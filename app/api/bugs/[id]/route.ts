@@ -25,6 +25,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             }
         }
 
+        updates.updated_at = new Date().toISOString();
+        updates.updated_by_name = actor_name;
+
         const { data: bug, error } = await supabaseAdmin
             .from('bugs')
             .update(updates)
