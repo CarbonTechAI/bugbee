@@ -220,7 +220,7 @@ export default function Dashboard() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
                                                         <StatusDropdown
-                                                            type={tab}
+                                                            type={tab === 'bugs' ? 'bug' : 'feature'}
                                                             currentStatus={item.status}
                                                             onStatusChange={(s) => handleStatusChange(item.id, s)}
                                                         />
