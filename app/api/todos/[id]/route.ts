@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../utils/supabase';
 import { validateToken, unauthorizedResponse } from '../../../utils/auth';
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ listId: string }> }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     if (!validateToken(req)) return unauthorizedResponse();
 
     try {
-        const { listId } = await params;
+        const { id } = await params;
         const body = await req.json();
         const { actor_name, ...updates } = body;
 
@@ -15,13 +15,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ li
             return NextResponse.json({ error: 'Actor Name is required' }, { status: 400 });
         }
 
+        // Handle completion status changes
+        if ('is_completed' in updates) {
+            if (updates.is_completed) {
+                updates.completed_at = new Date().toISOString();
+                updates.completed_by_name = actor_name;
+            } else {
+                updates.completed_at = null;
+                updates.completed_by_name = null;
+            }
+        }
+
         updates.updated_at = new Date().toISOString();
         updates.updated_by_name = actor_name;
 
-        const { data: list, error } = await supabaseAdmin
-            .from('todo_lists')
+        const { data: todo, error } = await supabaseAdmin
+            .from('todos')
             .update(updates)
-            .eq('id', listId)
+            .eq('id', id)
             .select()
             .single();
 
@@ -29,31 +40,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ li
 
         // Determine action for log
         let action = 'update';
-        if ('archived' in updates) {
+        if ('is_completed' in updates) {
+            action = updates.is_completed ? 'complete' : 'reopen';
+        } else if ('archived' in updates) {
             action = updates.archived ? 'archive' : 'unarchive';
         }
 
         // Log Activity
         await supabaseAdmin.from('activity_log').insert({
-            item_type: 'todo_list',
-            item_id: listId,
+            item_type: 'todo',
+            item_id: id,
             action: action,
             actor_name: actor_name,
             details: updates,
-            note: `Todo List ${action}d`
+            note: `Todo ${action}d`
         });
 
-        return NextResponse.json(list);
+        return NextResponse.json(todo);
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ listId: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     if (!validateToken(req)) return unauthorizedResponse();
 
     try {
-        const { listId } = await params;
+        const { id } = await params;
         const { searchParams } = new URL(req.url);
         const actor_name = searchParams.get('actor_name');
 
@@ -62,19 +75,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ l
         }
 
         const { error } = await supabaseAdmin
-            .from('todo_lists')
+            .from('todos')
             .delete()
-            .eq('id', listId);
+            .eq('id', id);
 
         if (error) throw error;
 
         // Log Activity
         await supabaseAdmin.from('activity_log').insert({
-            item_type: 'todo_list',
-            item_id: listId,
+            item_type: 'todo',
+            item_id: id,
             action: 'delete',
             actor_name: actor_name,
-            note: 'Todo List deleted'
+            note: 'Todo deleted'
         });
 
         return NextResponse.json({ success: true });

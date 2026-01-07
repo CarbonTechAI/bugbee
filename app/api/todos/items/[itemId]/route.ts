@@ -2,24 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../../utils/supabase';
 import { validateToken, unauthorizedResponse } from '../../../../utils/auth';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
-    if (!validateToken(req)) return unauthorizedResponse();
-
-    try {
-        const { itemId } = await params;
-        const { data: item, error } = await supabaseAdmin
-            .from('todo_items')
-            .select('*')
-            .eq('id', itemId)
-            .single();
-
-        if (error) throw error;
-        return NextResponse.json(item);
-    } catch (err: any) {
-        return NextResponse.json({ error: err.message }, { status: 500 });
-    }
-}
-
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
     if (!validateToken(req)) return unauthorizedResponse();
 

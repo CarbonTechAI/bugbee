@@ -7,29 +7,35 @@ export async function GET(req: NextRequest) {
     if (!validateToken(req)) return unauthorizedResponse();
 
     const { searchParams } = new URL(req.url);
-    const type = searchParams.get('type');
-    const showClosed = searchParams.get('showClosed') === 'true';
+    const showCompleted = searchParams.get('show_completed') === 'true';
+    const typeId = searchParams.get('type_id');
+    const search = searchParams.get('search');
 
     let query = supabaseAdmin
-        .from('todo_items')
-        .select('*')
+        .from('todos')
+        .select(`
+            *,
+            type:todo_types(id, name)
+        `)
+        .eq('archived', false)
         .order('created_at', { ascending: false });
 
-    // If we have a type, filter by it. If not, maybe we just show all?
-    // User requested: "filter by those different types"
-    if (type) {
-        query = query.eq('type', type);
-    }
-
-    if (!showClosed) {
+    if (!showCompleted) {
         query = query.eq('is_completed', false);
     }
 
-    const { data: items, error } = await query;
+    if (typeId && typeId !== 'all') {
+        query = query.eq('type_id', typeId);
+    }
+
+    if (search) {
+        query = query.ilike('title', `%${search}%`);
+    }
+
+    const { data: todos, error } = await query;
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    return NextResponse.json(items);
+    return NextResponse.json(todos);
 }
 
 export async function POST(req: NextRequest) {
@@ -37,21 +43,21 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { text, type, description, actor_name } = body;
+        const { title, type_id, priority, notes, actor_name } = body;
 
-        if (!text || !actor_name) {
-            return NextResponse.json({ error: 'Text and Actor Name are required' }, { status: 400 });
+        if (!title || !actor_name) {
+            return NextResponse.json({ error: 'Title and Actor Name are required' }, { status: 400 });
         }
 
-        const { data: item, error } = await supabaseAdmin
-            .from('todo_items')
+        const { data: todo, error } = await supabaseAdmin
+            .from('todos')
             .insert({
-                text,
-                type: type || 'Task',
-                description,
+                title,
+                type_id,
+                priority,
+                notes,
                 created_by_name: actor_name,
-                updated_by_name: actor_name,
-                is_completed: false
+                updated_by_name: actor_name
             })
             .select()
             .single();
@@ -60,15 +66,15 @@ export async function POST(req: NextRequest) {
 
         // Log Activity
         await supabaseAdmin.from('activity_log').insert({
-            item_type: 'todo_item',
-            item_id: item.id,
+            item_type: 'todo',
+            item_id: todo.id,
             action: 'create',
             actor_name: actor_name,
-            details: { text, type },
-            note: 'Todo Item created'
+            details: { title, type_id, priority },
+            note: 'Todo created'
         });
 
-        return NextResponse.json(item);
+        return NextResponse.json(todo);
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
