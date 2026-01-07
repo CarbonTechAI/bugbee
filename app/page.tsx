@@ -7,7 +7,7 @@ import StatusBadge from './components/StatusBadge';
 import TodoTable from './components/todo/TodoTable';
 import NewTaskModal from './components/todo/NewTaskModal';
 import StatusDropdown from './components/StatusDropdown';
-import { useUser } from '../context/UserContext';
+import { useUser } from './context/UserContext';
 import { useRouter } from 'next/navigation';
 import { Filter, ArrowUpDown, Archive, ListTodo, Plus } from 'lucide-react';
 
