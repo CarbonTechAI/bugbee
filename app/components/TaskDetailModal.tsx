@@ -203,6 +203,38 @@ export default function TaskDetailModal({ isOpen, todoId, onClose, onUpdate }: T
     }
   };
 
+  const handleDelete = async () => {
+    if (!todoId || !userName) return;
+
+    if (!confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('bugbee_token');
+      const res = await fetch(`/api/todos/${todoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-bugbee-token': token || ''
+        },
+        body: JSON.stringify({
+          actor_name: userName
+        })
+      });
+
+      if (res.ok) {
+        onUpdate();
+        onClose();
+      } else {
+        alert('Failed to delete task');
+      }
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      alert('Failed to delete task');
+    }
+  };
+
   const formatActivityAction = (act: Activity) => {
     switch (act.action) {
       case 'created':
@@ -305,20 +337,29 @@ export default function TaskDetailModal({ isOpen, todoId, onClose, onUpdate }: T
                     Edit
                   </button>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex justify-between">
                     <button
-                      onClick={() => setIsEditing(false)}
-                      className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-all text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSave}
+                      onClick={handleDelete}
                       disabled={!userName}
-                      className="px-3 py-1.5 bg-green-500/10 text-green-400 rounded hover:bg-green-500 hover:text-white transition-all text-sm disabled:opacity-50"
+                      className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500 hover:text-white transition-all text-sm disabled:opacity-50"
                     >
-                      Save
+                      Delete
                     </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setIsEditing(false)}
+                        className="px-3 py-1.5 bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-all text-sm"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        disabled={!userName}
+                        className="px-3 py-1.5 bg-green-500/10 text-green-400 rounded hover:bg-green-500 hover:text-white transition-all text-sm disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

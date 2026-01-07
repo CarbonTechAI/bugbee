@@ -129,3 +129,57 @@ export async function PATCH(
 
   return NextResponse.json(todo);
 }
+
+export async function DELETE(
+  request: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
+  if (!validateToken(request)) return unauthorizedResponse();
+
+  const params = await props.params;
+  const body = await request.json();
+  const { id } = params;
+  const { actor_name } = body;
+
+  // Validate actor name
+  if (!actor_name) {
+    return NextResponse.json(
+      { error: 'Actor name is required' },
+      { status: 400 }
+    );
+  }
+
+  // Get todo before deletion for activity log
+  const { data: todo, error: fetchError } = await supabaseAdmin
+    .from('todos')
+    .select('title')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !todo) {
+    return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
+  }
+
+  // Create activity log entry before deletion
+  await supabaseAdmin.from('activity_log').insert({
+    item_type: 'todo',
+    item_id: id,
+    action: 'deleted',
+    actor_name,
+    details: {
+      title: todo.title
+    },
+  });
+
+  // Delete the todo
+  const { error: deleteError } = await supabaseAdmin
+    .from('todos')
+    .delete()
+    .eq('id', id);
+
+  if (deleteError) {
+    return NextResponse.json({ error: deleteError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}
