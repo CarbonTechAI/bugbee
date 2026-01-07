@@ -320,7 +320,45 @@ export default function Dashboard() {
                         <td className={clsx("px-6 py-4 font-medium", item.status?.toLowerCase() === 'closed' && "line-through text-slate-500")}>{item.title}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <StatusBadge status={item.status} />
+                            <select
+                              value={item.status || ''}
+                              onChange={async (e) => {
+                                e.stopPropagation();
+                                const userName = localStorage.getItem('bugbee_username');
+                                if (!userName) {
+                                  alert('Please enter your name in the header before making changes');
+                                  return;
+                                }
+                                const newStatus = e.target.value;
+                                try {
+                                  const res = await fetch(`/api/${tab}/${item.id}`, {
+                                    method: 'PATCH',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'x-bugbee-token': localStorage.getItem('bugbee_token') || ''
+                                    },
+                                    body: JSON.stringify({
+                                      status: newStatus,
+                                      actor_name: userName,
+                                    }),
+                                  });
+                                  if (res.ok) {
+                                    fetchItems();
+                                  } else {
+                                    alert('Failed to update status');
+                                  }
+                                } catch (err) {
+                                  console.error(err);
+                                  alert('Failed to update status');
+                                }
+                              }}
+                              className="input text-xs py-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {uniqueStatuses.map(s => (
+                                <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
+                              ))}
+                            </select>
                             {item.last_comment_at && (
                               (!localStorage.getItem(`bugbee_viewed_${item.id}`) ||
                                 new Date(item.last_comment_at) > new Date(localStorage.getItem(`bugbee_viewed_${item.id}`)!))
