@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import StatusBadge from './components/StatusBadge';
-import TodoListBoard from './components/todo/TodoListBoard';
+import TodoTable from './components/todo/TodoTable';
 import { useRouter } from 'next/navigation';
 import { Filter, ArrowUpDown, Archive, ListTodo } from 'lucide-react';
 
@@ -97,7 +97,7 @@ export default function Dashboard() {
       </div>
 
       {tab === 'todo' ? (
-        <TodoListBoard />
+        <TodoTable />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-4">
@@ -202,4 +202,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
