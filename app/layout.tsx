@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import AuthGuard from './components/AuthGuard';
-import Nav from './components/Nav';
+import NavWithModal from './components/NavWithModal';
 import Link from 'next/link';
 import LogoutButton from './components/LogoutButton';
 import { UserProvider } from './context/UserContext';
@@ -38,7 +38,7 @@ export default function RootLayout({
                   {/* Desktop Nav + Logout */}
                   <div className="hidden md:flex items-center gap-6">
                     <UserNameInput />
-                    <Nav />
+                    <NavWithModal />
                     <div className="w-px h-6 bg-slate-800"></div>
                     <LogoutButton />
                   </div>
@@ -46,7 +46,7 @@ export default function RootLayout({
                   {/* Mobile Nav */}
                   <div className="md:hidden w-full flex flex-col gap-4 items-center">
                     <UserNameInput />
-                    <Nav />
+                    <NavWithModal />
                     <LogoutButton />
                   </div>
                 </div>
