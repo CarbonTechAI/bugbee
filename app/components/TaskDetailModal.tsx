@@ -43,7 +43,7 @@ interface TaskDetailModalProps {
 }
 
 export default function TaskDetailModal({ isOpen, todoId, onClose, onUpdate }: TaskDetailModalProps) {
-  const { username } = useUser();
+  const { userName } = useUser();
   const [todo, setTodo] = useState<Todo | null>(null);
   const [activity, setActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(false);
@@ -147,7 +147,7 @@ export default function TaskDetailModal({ isOpen, todoId, onClose, onUpdate }: T
         },
         body: JSON.stringify({
           name: newTypeName.trim(),
-          actor_name: username || 'Anonymous'
+          actor_name: userName || 'Anonymous'
         })
       });
 
@@ -169,10 +169,10 @@ export default function TaskDetailModal({ isOpen, todoId, onClose, onUpdate }: T
   };
 
   const handleSave = async () => {
-    if (!todoId || !username) return;
+    if (!todoId || !userName) return;
 
     const updates: any = {
-      actor_name: username
+      actor_name: userName
     };
 
     if (title !== todo?.title) updates.title = title;
@@ -314,7 +314,7 @@ export default function TaskDetailModal({ isOpen, todoId, onClose, onUpdate }: T
                     </button>
                     <button
                       onClick={handleSave}
-                      disabled={!username}
+                      disabled={!userName}
                       className="px-3 py-1.5 bg-green-500/10 text-green-400 rounded hover:bg-green-500 hover:text-white transition-all text-sm disabled:opacity-50"
                     >
                       Save
