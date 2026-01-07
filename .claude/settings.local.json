@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(xargs rm -rf)",
+      "Bash(npm run build:*)",
+      "Bash(npm run start:*)",
+      "Bash(pkill:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(TURBOPACK_CACHE=0 npm run dev:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add complete To-Do feature with task management and activity tracking\n\n- Add To-Do tab to dashboard with table view\n- Implement todo types with inline creation and case-insensitive uniqueness\n- Add New Task button to header navigation with modal\n- Create task detail modal with view/edit functionality and activity history\n- Implement comprehensive API endpoints:\n  - GET/POST /api/todos with query parameters \\(search, filters, pagination\\)\n  - GET/PATCH /api/todos/[id] for individual todo operations\n  - GET /api/todos/[id]/activity for activity history\n  - GET/POST /api/todo-types for type management\n- Add activity logging for all todo mutations\n- Include filtering by type, status, and completion state\n- Support for priorities \\(low/medium/high\\) and custom notes\n- Track created_by, updated_by, completed_by with timestamps\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git commit:*)",
+      "Bash(mcp__supabase__execute_sql '{\"\"query\"\": \"\"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ''''bugs'''' ORDER BY ordinal_position;\"\"}')",
+      "Bash(claude mcp add:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

@@ -78,7 +78,7 @@ export default function Dashboard() {
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
-  const bugStatuses = ['open', 'needs_verification', 'reopened', 'closed'];
+  const bugStatuses = ['open', 'needs_verification', 'reopened', 'closed_archived'];
   const featureStatuses = ['open', 'planned', 'in_progress', 'shipped', 'closed'];
   const todoStatuses = ['open', 'completed'];
   const statuses = tab === 'bugs' ? bugStatuses : tab === 'features' ? featureStatuses : todoStatuses;
@@ -318,8 +318,8 @@ export default function Dashboard() {
                         onClick={() => router.push(`/item/${item.id}?type=${tab === 'bugs' ? 'bug' : 'feature'}`)}
                         className="hover:bg-slate-700/50 cursor-pointer transition-colors"
                       >
-                        <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} muted={item.status?.toLowerCase() === 'closed'} /></td>
-                        <td className={clsx("px-6 py-4 font-medium", item.status?.toLowerCase() === 'closed' && "line-through text-slate-500")}>{item.title}</td>
+                        <td className="px-6 py-4"><StatusBadge severity={tab === 'bugs' ? item.severity : item.priority} muted={item.status?.toLowerCase() === 'closed_archived' || item.status?.toLowerCase() === 'closed'} /></td>
+                        <td className={clsx("px-6 py-4 font-medium", item.status?.toLowerCase() === 'closed_archived' && "line-through text-slate-500")}>{item.title}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <select
@@ -358,7 +358,7 @@ export default function Dashboard() {
                               onClick={(e) => e.stopPropagation()}
                             >
                               {statuses.map((s: string) => (
-                                <option key={s} value={s}>{s === 'closed' ? 'Closed & Archived' : s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
+                                <option key={s} value={s}>{s === 'closed_archived' || s === 'closed' ? 'Closed & Archived' : s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
                               ))}
                             </select>
                             {item.last_comment_at && (

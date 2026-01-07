@@ -305,11 +305,11 @@ ${item.console_logs}
                         onChange={(e) => handleUpdate(e.target.value)}
                     >
                         {(type === 'bug'
-                            ? ['open', 'needs_verification', 'reopened', 'closed']
+                            ? ['open', 'needs_verification', 'reopened', 'closed_archived']
                             : ['open', 'planned', 'in_progress', 'shipped', 'closed']
                         ).map(s => {
                             let label = s.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                            if (s === 'closed') label = 'Closed & Archived';
+                            if (s === 'closed_archived' || s === 'closed') label = 'Closed & Archived';
                             return (
                                 <option key={s} value={s}>
                                     {label}

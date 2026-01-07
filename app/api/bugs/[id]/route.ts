@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         // Logic: If closing, also archive. If opening, unarchive.
         // We only touch 'archived' if 'status' is being changed.
         if (updates.status) {
-            if (updates.status === 'closed') {
+            if (updates.status === 'closed_archived') {
                 updates.archived = true;
             } else {
                 updates.archived = false;
