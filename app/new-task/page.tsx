@@ -108,7 +108,7 @@ export default function NewTask() {
                     priority: formData.priority || null,
                     type_id: formData.type_id || null,
                     notes: formData.notes || null,
-                    created_by_name: userName
+                    actor_name: userName
                 }),
             });
 
