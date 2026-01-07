@@ -48,3 +48,37 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ li
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ listId: string }> }) {
+    if (!validateToken(req)) return unauthorizedResponse();
+
+    try {
+        const { listId } = await params;
+        const { searchParams } = new URL(req.url);
+        const actor_name = searchParams.get('actor_name');
+
+        if (!actor_name) {
+            return NextResponse.json({ error: 'Actor Name is required' }, { status: 400 });
+        }
+
+        const { error } = await supabaseAdmin
+            .from('todo_lists')
+            .delete()
+            .eq('id', listId);
+
+        if (error) throw error;
+
+        // Log Activity
+        await supabaseAdmin.from('activity_log').insert({
+            item_type: 'todo_list',
+            item_id: listId,
+            action: 'delete',
+            actor_name: actor_name,
+            note: 'Todo List deleted'
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+}

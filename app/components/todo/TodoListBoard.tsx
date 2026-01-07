@@ -32,14 +32,30 @@ export default function TodoListBoard() {
         fetchLists();
     }, []);
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleCreateList = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newListName.trim()) return;
+        if (!newListName.trim() || isSubmitting) return;
 
         if (!userName) {
             alert('Please enter your name at the top of the page to create a list.');
             return;
         }
+
+        setIsSubmitting(true);
+        const optimId = crypto.randomUUID();
+        const optimisticList = {
+            id: optimId,
+            name: newListName,
+            created_at: new Date().toISOString(),
+            items: []
+        };
+
+        // Optimistic update
+        setLists(prev => [optimisticList, ...prev]);
+        setNewListName('');
+        setIsCreating(false);
 
         try {
             const res = await fetch('/api/todos', {
@@ -49,18 +65,24 @@ export default function TodoListBoard() {
                     'x-bugbee-token': localStorage.getItem('bugbee_token') || ''
                 },
                 body: JSON.stringify({
-                    name: newListName,
+                    name: optimisticList.name,
                     actor_name: userName
                 })
             });
 
             if (res.ok) {
-                setNewListName('');
-                setIsCreating(false);
+                // Background refresh to get real ID
                 fetchLists();
+            } else {
+                // Revert on failure
+                setLists(prev => prev.filter(l => l.id !== optimId));
+                alert('Failed to create list');
             }
         } catch (error) {
             console.error('Failed to create list', error);
+            setLists(prev => prev.filter(l => l.id !== optimId));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 

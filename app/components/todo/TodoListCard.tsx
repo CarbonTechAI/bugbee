@@ -16,11 +16,21 @@ export default function TodoListCard({ list, onRefresh }: TodoListCardProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCompleted, setShowCompleted] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState(list.name);
     const inputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
+    const editInputRef = useRef<HTMLInputElement>(null);
 
     const activeItems = list.items.filter((i: any) => !i.is_completed);
     const completedItems = list.items.filter((i: any) => i.is_completed);
+
+    // Default focus on edit
+    useEffect(() => {
+        if (isEditing && editInputRef.current) {
+            editInputRef.current.focus();
+        }
+    }, [isEditing]);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -126,12 +136,77 @@ export default function TodoListCard({ list, onRefresh }: TodoListCardProps) {
         }
     };
 
+    const handleDeleteList = async () => {
+        if (!userName) {
+            alert('Please enter your name at the top of the page to delete this list.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to PERMANENTLY delete this list? This cannot be undone.')) return;
+
+        try {
+            await fetch(`/api/todos/${list.id}?actor_name=${encodeURIComponent(userName)}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-bugbee-token': localStorage.getItem('bugbee_token') || ''
+                }
+            });
+            onRefresh();
+        } catch (error) {
+            console.error('Failed to delete list', error);
+        }
+    };
+
+    const handleSaveTitle = async () => {
+        if (!editName.trim() || editName === list.name) {
+            setIsEditing(false);
+            return;
+        }
+
+        try {
+            await fetch(`/api/todos/${list.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-bugbee-token': localStorage.getItem('bugbee_token') || ''
+                },
+                body: JSON.stringify({
+                    name: editName,
+                    actor_name: userName
+                })
+            });
+            setIsEditing(false);
+            onRefresh();
+        } catch (error) {
+            console.error('Failed to update list name', error);
+        }
+    };
+
     return (
         <div className="bg-slate-800 rounded-lg shadow-lg border border-slate-700 flex flex-col h-full max-h-[600px] relative">
             {/* Header */}
             <div className="p-4 border-b border-slate-700 bg-slate-800/50 rounded-t-lg">
                 <div className="flex justify-between items-start mb-1 relative">
-                    <h3 className="font-bold text-lg text-white">{list.name}</h3>
+                    {isEditing ? (
+                        <input
+                            ref={editInputRef}
+                            className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-white font-bold w-full mr-2"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onBlur={handleSaveTitle}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
+                        />
+                    ) : (
+                        <h3
+                            className="font-bold text-lg text-white cursor-pointer hover:underline decoration-slate-600"
+                            onClick={() => {
+                                setEditName(list.name);
+                                setIsEditing(true);
+                            }}
+                        >
+                            {list.name}
+                        </h3>
+                    )}
                     <div className="relative" ref={menuRef}>
                         <button
                             onClick={() => setShowMenu(!showMenu)}
@@ -144,6 +219,17 @@ export default function TodoListCard({ list, onRefresh }: TodoListCardProps) {
                             <div className="absolute right-0 top-full mt-1 w-32 bg-slate-900 border border-slate-700 rounded shadow-xl z-20 overflow-hidden">
                                 <button
                                     onClick={() => {
+                                        setEditName(list.name);
+                                        setIsEditing(true);
+                                        setShowMenu(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-2"
+                                >
+                                    <span className="text-xs">✏️</span>
+                                    Edit Name
+                                </button>
+                                <button
+                                    onClick={() => {
                                         handleArchiveList();
                                         setShowMenu(false);
                                     }}
@@ -151,6 +237,17 @@ export default function TodoListCard({ list, onRefresh }: TodoListCardProps) {
                                 >
                                     <Archive size={14} />
                                     Archive
+                                </button>
+                                <div className="border-t border-slate-800 my-1"></div>
+                                <button
+                                    onClick={() => {
+                                        handleDeleteList();
+                                        setShowMenu(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                                >
+                                    <Trash2 size={14} />
+                                    Delete
                                 </button>
                             </div>
                         )}
