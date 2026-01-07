@@ -34,7 +34,7 @@ export default function StatusBadge({ status, severity, muted }: { status?: stri
         };
         return (
             <span className={clsx("px-2 py-0.5 rounded text-xs font-semibold border capitalize whitespace-nowrap", colors[status.toLowerCase()] || 'bg-slate-700 text-slate-300 border-slate-600')}>
-                {status.replace('_', ' ')}
+                {status === 'closed' ? 'Closed & Archived' : status.replace('_', ' ')}
             </span>
         );
     }
