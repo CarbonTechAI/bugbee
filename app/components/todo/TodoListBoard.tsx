@@ -133,9 +133,9 @@ export default function TodoListBoard() {
                             <p className="text-slate-500 mb-4">Create a task list to get started tracking your work.</p>
                             <button
                                 onClick={() => setIsCreating(true)}
-                                className="btn btn-outline border-slate-700 text-slate-300 hover:text-white"
+                                className="btn btn-outline border-slate-700 text-slate-300 hover:text-white inline-flex items-center gap-2"
                             >
-                                <Plus size={16} className="mr-2" />
+                                <Plus size={16} />
                                 Create your first list
                             </button>
                         </div>
