@@ -3,6 +3,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../utils/supabase';
 import { validateToken, unauthorizedResponse } from '../../../utils/auth';
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    if (!validateToken(req)) return unauthorizedResponse();
+
+    try {
+        const { id } = await params;
+
+        const { data: feature, error } = await supabaseAdmin
+            .from('features')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        if (!feature) return NextResponse.json({ error: 'Feature not found' }, { status: 404 });
+
+        return NextResponse.json(feature);
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     if (!validateToken(req)) return unauthorizedResponse();
 
