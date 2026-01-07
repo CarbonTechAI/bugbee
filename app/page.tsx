@@ -78,10 +78,12 @@ export default function Dashboard() {
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
-  const uniqueStatuses = Array.from(new Set(items.map(i => i.status).filter(Boolean)));
+  const bugStatuses = ['open', 'needs_verification', 'reopened', 'closed'];
+  const featureStatuses = ['open', 'planned', 'in_progress', 'shipped', 'closed'];
+  const todoStatuses = ['open', 'completed'];
+  const statuses = tab === 'bugs' ? bugStatuses : tab === 'features' ? featureStatuses : todoStatuses;
   const severities = ['low', 'medium', 'high', 'critical'];
   const priorities = ['nice', 'important', 'critical'];
-  const todoStatuses = ['open', 'completed'];
   const uniqueTypes = Array.from(new Set(items.filter(i => i.type).map(i => ({ id: i.type.id, name: i.type.name })))).filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
 
   return (
@@ -171,7 +173,7 @@ export default function Dashboard() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
                   <option value="all">All Status</option>
-                  {uniqueStatuses.map(s => (
+                  {statuses.map((s: string) => (
                     <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
                   ))}
                 </select>
@@ -355,8 +357,8 @@ export default function Dashboard() {
                               className="input text-xs py-1"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {uniqueStatuses.map(s => (
-                                <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
+                              {statuses.map((s: string) => (
+                                <option key={s} value={s}>{s === 'closed' ? 'Closed & Archived' : s.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
                               ))}
                             </select>
                             {item.last_comment_at && (
