@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const { data: features, error } = await supabaseAdmin
         .from('features')
         .select('*')
-        .eq('is_archived', archived)
+        .eq('archived', archived)
         .order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
