@@ -23,14 +23,14 @@ export default function StatusDropdown({ currentStatus, type, onStatusChange }: 
             { value: 'open', label: 'Open', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
             { value: 'needs_verification', label: 'Needs Verification', color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
             { value: 'reopened', label: 'Reopened', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-            { value: 'closed', label: 'Closed', color: 'bg-green-500/20 text-green-400 border-green-500/30' }
+            { value: 'closed', label: 'Closed & Archived', color: 'bg-green-500/20 text-green-400 border-green-500/30' }
         ],
         feature: [
             { value: 'open', label: 'Open', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
             { value: 'planned', label: 'Planned', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
             { value: 'in_progress', label: 'In Progress', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
             { value: 'shipped', label: 'Shipped', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-            { value: 'closed', label: 'Closed', color: 'bg-slate-700/50 text-slate-500 border-slate-700' }
+            { value: 'closed', label: 'Closed & Archived', color: 'bg-slate-700/50 text-slate-500 border-slate-700' }
         ],
         todo: [
             { value: 'open', label: 'Open', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
