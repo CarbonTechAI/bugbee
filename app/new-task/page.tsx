@@ -90,7 +90,7 @@ export default function NewTask() {
         e.preventDefault();
 
         if (!userName.trim()) {
-            alert('Please enter your name in the header to create a task');
+            alert('Please enter your name in the header to create a to-do');
             return;
         }
 
@@ -118,7 +118,7 @@ export default function NewTask() {
             router.push('/');
         } catch (err) {
             console.error(err);
-            alert('Error creating task');
+            alert('Error creating to-do');
         } finally {
             setSubmitting(false);
         }
@@ -127,8 +127,8 @@ export default function NewTask() {
     return (
         <div className="max-w-2xl mx-auto">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold">Create New Task</h1>
-                <p className="text-slate-400">Add a new task to your to-do list.</p>
+                <h1 className="text-2xl font-bold">Create New To-Do</h1>
+                <p className="text-slate-400">Add a new item to your to-do list.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="card space-y-6">
@@ -233,7 +233,7 @@ export default function NewTask() {
                 <div className="flex justify-end gap-3 pt-4">
                     <button type="button" onClick={() => router.back()} className="btn btn-secondary">Cancel</button>
                     <button type="submit" disabled={submitting} className="btn btn-primary w-32">
-                        {submitting ? 'Creating...' : 'Create Task'}
+                        {submitting ? 'Creating...' : 'Create To-Do'}
                     </button>
                 </div>
             </form>

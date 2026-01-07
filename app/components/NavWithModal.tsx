@@ -50,7 +50,7 @@ export default function NavWithModal() {
             : "bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white border border-green-500/20"
         )}
       >
-        New Task
+        New To-Do
       </Link>
     </nav>
   );
