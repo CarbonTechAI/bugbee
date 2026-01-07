@@ -85,31 +85,32 @@ export default function Dashboard() {
   const uniqueTypes = Array.from(new Set(items.filter(i => i.type).map(i => ({ id: i.type.id, name: i.type.name })))).filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Inbox</h1>
-          <Link href="/archives" className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors bg-slate-800/50 px-2 py-1 rounded border border-slate-800 hover:border-slate-700">
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold">Inbox</h1>
+          <Link href="/archives" className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors bg-slate-800/50 px-2 py-1 rounded border border-slate-800 hover:border-slate-700 whitespace-nowrap">
             <Archive size={12} />
-            View Archives
+            <span className="hidden sm:inline">View Archives</span>
+            <span className="sm:hidden">Archives</span>
           </Link>
         </div>
-        <div className="flex gap-2 bg-slate-800 p-1 rounded-lg">
+        <div className="flex gap-2 bg-slate-800 p-1 rounded-lg w-full sm:w-auto">
           <button
             onClick={() => setTab('bugs')}
-            className={clsx("px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'bugs' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
+            className={clsx("flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'bugs' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
           >
             Bugs
           </button>
           <button
             onClick={() => setTab('features')}
-            className={clsx("px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'features' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
+            className={clsx("flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'features' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
           >
             Features
           </button>
           <button
             onClick={() => setTab('todos')}
-            className={clsx("px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'todos' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
+            className={clsx("flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded transition-all", tab === 'todos' ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white")}
           >
             To-Do
           </button>
@@ -198,8 +199,8 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="card p-0 overflow-hidden">
-            <table className="w-full text-left text-sm">
+          <div className="card p-0 overflow-hidden overflow-x-auto">
+            <table className="w-full text-left text-sm min-w-200">
               <thead className="bg-slate-900/50 text-slate-400 font-medium border-b border-slate-700">
                 <tr>
                   {tab === 'todos' ? (
