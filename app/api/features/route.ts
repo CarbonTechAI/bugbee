@@ -24,33 +24,40 @@ export async function GET(req: NextRequest) {
     const { data: features, error } = await query.order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!features || features.length === 0) return NextResponse.json([]);
 
-    const { data: comments } = await supabaseAdmin
-        .from('activity_log')
-        .select('item_id, created_at')
-        .eq('item_type', 'feature')
-        .eq('action', 'comment')
-        .order('created_at', { ascending: false });
+    // Get feature IDs for filtering activity
+    const featureIds = features.map(f => f.id);
+
+    // Run activity queries in parallel and filter by feature IDs
+    const [commentsResult, activityResult] = await Promise.all([
+        supabaseAdmin
+            .from('activity_log')
+            .select('item_id, created_at')
+            .eq('item_type', 'feature')
+            .eq('action', 'comment')
+            .in('item_id', featureIds)
+            .order('created_at', { ascending: false }),
+        supabaseAdmin
+            .from('activity_log')
+            .select('item_id, created_at, actor_name')
+            .eq('item_type', 'feature')
+            .in('item_id', featureIds)
+            .order('created_at', { ascending: false })
+    ]);
 
     const commentMap = new Map();
-    if (comments) {
-        for (const c of comments) {
+    if (commentsResult.data) {
+        for (const c of commentsResult.data) {
             if (!commentMap.has(c.item_id)) {
                 commentMap.set(c.item_id, c.created_at);
             }
         }
     }
 
-    // Fetch all activity for last activity timestamp
-    const { data: allActivity } = await supabaseAdmin
-        .from('activity_log')
-        .select('item_id, created_at, actor_name')
-        .eq('item_type', 'feature')
-        .order('created_at', { ascending: false });
-
     const activityMap = new Map();
-    if (allActivity) {
-        for (const a of allActivity) {
+    if (activityResult.data) {
+        for (const a of activityResult.data) {
             if (!activityMap.has(a.item_id)) {
                 activityMap.set(a.item_id, {
                     date: a.created_at,
