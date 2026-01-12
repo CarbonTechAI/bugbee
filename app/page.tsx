@@ -30,8 +30,8 @@ export default function Dashboard() {
     fetchItems();
   }, [tab]);
 
-  const fetchItems = async () => {
-    setLoading(true);
+  const fetchItems = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const res = await fetch(`/api/${tab}`, {
         headers: { 'x-bugbee-token': localStorage.getItem('bugbee_token') || '' }
@@ -332,6 +332,16 @@ export default function Dashboard() {
                                   return;
                                 }
                                 const newStatus = e.target.value;
+                                const isArchiving = newStatus === 'closed_archived' || newStatus === 'closed';
+
+                                // Optimistic update: immediately remove item if archiving
+                                if (isArchiving) {
+                                  setItems(prev => prev.filter(i => i.id !== item.id));
+                                } else {
+                                  // Update status locally for non-archive changes
+                                  setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: newStatus } : i));
+                                }
+
                                 try {
                                   const res = await fetch(`/api/${tab}/${item.id}`, {
                                     method: 'PATCH',
@@ -344,13 +354,14 @@ export default function Dashboard() {
                                       actor_name: userName,
                                     }),
                                   });
-                                  if (res.ok) {
-                                    fetchItems();
-                                  } else {
+                                  if (!res.ok) {
+                                    // Revert on failure
+                                    fetchItems(false);
                                     alert('Failed to update status');
                                   }
                                 } catch (err) {
                                   console.error(err);
+                                  fetchItems(false);
                                   alert('Failed to update status');
                                 }
                               }}
