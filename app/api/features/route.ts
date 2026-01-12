@@ -10,16 +10,14 @@ export async function GET(req: NextRequest) {
 
     let query = supabaseAdmin
         .from('features')
-        .select('*')
-        .eq('archived', archived);
+        .select('*');
 
-    // Safety net: filter by status in addition to archived field
-    // This ensures items appear in correct view even if archived field wasn't properly set
+    // Use status as the source of truth for inbox vs archives
     if (!archived) {
-        // Inbox: exclude closed status
+        // Inbox: show all features EXCEPT those with closed status
         query = query.neq('status', 'closed');
     } else {
-        // Archives: only show closed status (exclude open, in_progress, etc.)
+        // Archives: only show features with closed status
         query = query.eq('status', 'closed');
     }
 

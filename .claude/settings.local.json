@@ -20,7 +20,8 @@
       "Bash(git fetch:*)",
       "Bash(git commit:*)",
       "Bash(mcp__supabase__execute_sql '{\"\"query\"\": \"\"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ''''bugs'''' ORDER BY ordinal_position;\"\"}')",
-      "Bash(claude mcp add:*)"
+      "Bash(claude mcp add:*)",
+      "Bash(git branch:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

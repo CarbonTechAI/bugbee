@@ -10,16 +10,14 @@ export async function GET(req: NextRequest) {
 
     let query = supabaseAdmin
         .from('bugs')
-        .select('*')
-        .eq('archived', archived);
+        .select('*');
 
-    // Safety net: filter by status in addition to archived field
-    // This ensures items appear in correct view even if archived field wasn't properly set
+    // Use status as the source of truth for inbox vs archives
     if (!archived) {
-        // Inbox: exclude closed_archived status
+        // Inbox: show all bugs EXCEPT those with closed_archived status
         query = query.neq('status', 'closed_archived');
     } else {
-        // Archives: only show closed_archived status (exclude reopened, open, etc.)
+        // Archives: only show bugs with closed_archived status
         query = query.eq('status', 'closed_archived');
     }
 
