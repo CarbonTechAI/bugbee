@@ -8,11 +8,18 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const archived = searchParams.get('archived') === 'true';
 
-    const { data: bugs, error } = await supabaseAdmin
+    let query = supabaseAdmin
         .from('bugs')
         .select('*')
-        .eq('archived', archived)
-        .order('created_at', { ascending: false });
+        .eq('archived', archived);
+
+    // For inbox (non-archived view), also exclude items with closed_archived status
+    // This is a safety net in case the archived field wasn't properly set
+    if (!archived) {
+        query = query.neq('status', 'closed_archived');
+    }
+
+    const { data: bugs, error } = await query.order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
