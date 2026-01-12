@@ -13,10 +13,14 @@ export async function GET(req: NextRequest) {
         .select('*')
         .eq('archived', archived);
 
-    // For inbox (non-archived view), also exclude items with closed status
-    // This is a safety net in case the archived field wasn't properly set
+    // Safety net: filter by status in addition to archived field
+    // This ensures items appear in correct view even if archived field wasn't properly set
     if (!archived) {
+        // Inbox: exclude closed status
         query = query.neq('status', 'closed');
+    } else {
+        // Archives: only show closed status (exclude open, in_progress, etc.)
+        query = query.eq('status', 'closed');
     }
 
     const { data: features, error } = await query.order('created_at', { ascending: false });
