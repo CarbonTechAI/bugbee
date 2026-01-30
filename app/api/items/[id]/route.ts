@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             'title', 'description', 'status', 'severity', 'priority',
             'expected_result', 'actual_result', 'reproduction_steps',
             'environment', 'console_logs', 'requester_name', 'requester_email',
-            'reporter_name', 'reporter_email'
+            'reporter_name', 'reporter_email', 'module', 'assigned_to'
         ];
 
         const filteredUpdates: any = {};

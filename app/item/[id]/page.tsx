@@ -7,6 +7,13 @@ import Attachments from '../../components/Attachments';
 import { useUser } from '../../context/UserContext';
 import { Copy, ThumbsUp } from 'lucide-react';
 import clsx from 'clsx';
+import { ModuleBadge, ModuleSelector } from '../../components/ModuleSelector';
+import { AssigneeSelector } from '../../components/AssigneeSelector';
+
+interface TeamMember {
+    id: string;
+    name: string;
+}
 
 export default function ItemDetail() {
     const params = useParams();
@@ -24,12 +31,36 @@ export default function ItemDetail() {
     const [editData, setEditData] = useState<any>(null);
     const [hasUnread, setHasUnread] = useState(false);
     const [latestCommentDate, setLatestCommentDate] = useState<string | null>(null);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const { userName } = useUser();
 
+    useEffect(() => {
+        fetchTeamMembers();
+    }, []);
 
     useEffect(() => {
         if (id && type) fetchItem();
     }, [id, type]);
+
+    const fetchTeamMembers = async () => {
+        try {
+            const res = await fetch('/api/team-members', {
+                headers: { 'x-bugbee-token': localStorage.getItem('bugbee_token') || '' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setTeamMembers(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch team members', error);
+        }
+    };
+
+    const getAssigneeName = (assigneeId: string | null) => {
+        if (!assigneeId) return null;
+        const member = teamMembers.find(m => m.id === assigneeId);
+        return member?.name || null;
+    };
 
     const fetchItem = async () => {
         try {
@@ -169,9 +200,15 @@ ${item.console_logs}
                             <span>{new Date(item.created_at).toLocaleString()}</span>
                         </div>
                         <h1 className="text-3xl font-bold">{item.title}</h1>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                             <StatusBadge status={item.status} />
                             <StatusBadge severity={item.severity || item.priority} />
+                            {item.module && <ModuleBadge module={item.module} size="md" />}
+                            {item.assigned_to && getAssigneeName(item.assigned_to) && (
+                                <span className="bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-full text-sm font-medium">
+                                    {getAssigneeName(item.assigned_to)}
+                                </span>
+                            )}
                             {hasUnread && (
                                 <button
                                     onClick={markAsRead}
@@ -229,6 +266,24 @@ ${item.console_logs}
                                             <input name="environment" value={editData.environment || ''} onChange={handleEditChange} className="input" />
                                         </div>
                                     </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="label">Module</label>
+                                            <ModuleSelector 
+                                                value={editData.module} 
+                                                onChange={(v) => setEditData({ ...editData, module: v })}
+                                                showAll={false}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">Assignee</label>
+                                            <AssigneeSelector 
+                                                value={editData.assigned_to} 
+                                                onChange={(v) => setEditData({ ...editData, assigned_to: v })}
+                                                showAll={false}
+                                            />
+                                        </div>
+                                    </div>
                                     <div>
                                         <label className="label">Actual Result</label>
                                         <textarea name="actual_result" value={editData.actual_result} onChange={handleEditChange} className="input h-24" />
@@ -255,6 +310,24 @@ ${item.console_logs}
                                             <option value="important">Important</option>
                                             <option value="nice">Nice to Have</option>
                                         </select>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="label">Module</label>
+                                            <ModuleSelector 
+                                                value={editData.module} 
+                                                onChange={(v) => setEditData({ ...editData, module: v })}
+                                                showAll={false}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label">Assignee</label>
+                                            <AssigneeSelector 
+                                                value={editData.assigned_to} 
+                                                onChange={(v) => setEditData({ ...editData, assigned_to: v })}
+                                                showAll={false}
+                                            />
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="label">Description</label>
