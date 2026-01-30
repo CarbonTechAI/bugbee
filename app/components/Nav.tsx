@@ -18,6 +18,15 @@ export default function Nav() {
             >
                 Dashboard
             </Link>
+            <Link
+                href="/team"
+                className={clsx(
+                    "transition-colors hover:text-white",
+                    pathname === '/team' ? "text-white" : "text-slate-400"
+                )}
+            >
+                Team
+            </Link>
             <div className="w-px h-4 bg-slate-700 mx-2" />
             <Link
                 href="/report/bug"

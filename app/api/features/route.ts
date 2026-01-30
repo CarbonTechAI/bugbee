@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const archived = searchParams.get('archived') === 'true';
+    const module = searchParams.get('module');
+    const assignedTo = searchParams.get('assigned_to');
 
     let query = supabaseAdmin
         .from('features')
@@ -19,6 +21,16 @@ export async function GET(req: NextRequest) {
     } else {
         // Archives: only show features with closed status
         query = query.eq('status', 'closed');
+    }
+
+    // Filter by module if specified
+    if (module) {
+        query = query.eq('module', module);
+    }
+
+    // Filter by assignee if specified
+    if (assignedTo) {
+        query = query.eq('assigned_to', assignedTo);
     }
 
     const { data: features, error } = await query.order('created_at', { ascending: false });
@@ -85,12 +97,13 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { title, description, priority, requester_name, requester_email } = body;
+        const { title, description, priority, requester_name, requester_email, module, assigned_to } = body;
 
         const { data: feature, error } = await supabaseAdmin
             .from('features')
             .insert({
                 title, description, priority, requester_name, requester_email,
+                module, assigned_to,
                 status: 'open'
             })
             .select()
