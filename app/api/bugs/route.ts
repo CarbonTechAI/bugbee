@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const archived = searchParams.get('archived') === 'true';
+    const module = searchParams.get('module');
+    const assignedTo = searchParams.get('assigned_to');
 
     let query = supabaseAdmin
         .from('bugs')
@@ -19,6 +21,16 @@ export async function GET(req: NextRequest) {
     } else {
         // Archives: only show bugs with closed_archived status
         query = query.eq('status', 'closed_archived');
+    }
+
+    // Filter by module if specified
+    if (module) {
+        query = query.eq('module', module);
+    }
+
+    // Filter by assignee if specified
+    if (assignedTo) {
+        query = query.eq('assigned_to', assignedTo);
     }
 
     const { data: bugs, error } = await query.order('created_at', { ascending: false });
@@ -85,13 +97,14 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { title, severity, actual_result, expected_result, reproduction_steps, environment, console_logs, reporter_name, reporter_email } = body;
+        const { title, severity, actual_result, expected_result, reproduction_steps, environment, console_logs, reporter_name, reporter_email, module, assigned_to } = body;
 
         const { data: bug, error } = await supabaseAdmin
             .from('bugs')
             .insert({
                 title, severity, actual_result, expected_result, reproduction_steps,
                 environment, console_logs, reporter_name, reporter_email,
+                module, assigned_to,
                 status: 'open'
             })
             .select()
