@@ -21,31 +21,35 @@ export async function GET(req: NextRequest) {
             return NextResponse.json([]);
         }
 
-        // Manually calculate workload
+        const today = new Date().toISOString().split('T')[0];
+
+        // Manually calculate workload from work_items
         const workloadData = await Promise.all(
             members.map(async (member) => {
-                const [bugsResult, featuresResult] = await Promise.all([
-                    supabaseAdmin
-                        .from('bugs')
-                        .select('id, status')
-                        .eq('assigned_to', member.id),
-                    supabaseAdmin
-                        .from('features')
-                        .select('id, status')
-                        .eq('assigned_to', member.id)
-                ]);
+                const { data: items } = await supabaseAdmin
+                    .from('work_items')
+                    .select('id, status, kind, due_date')
+                    .eq('assigned_to', member.id);
 
-                const bugs = bugsResult.data || [];
-                const features = featuresResult.data || [];
+                const allItems = items || [];
+
+                const openItems = allItems.filter(
+                    (i) => i.status !== 'done' && i.status !== 'archived'
+                );
 
                 return {
                     team_member_id: member.id,
                     name: member.name,
                     role: member.role,
-                    open_bugs: bugs.filter(b => !['closed', 'closed_archived', 'fixed'].includes(b.status)).length,
-                    open_features: features.filter(f => !['closed', 'shipped'].includes(f.status)).length,
-                    bugs_in_progress: bugs.filter(b => b.status === 'in_progress').length,
-                    features_in_progress: features.filter(f => f.status === 'in_progress').length
+                    open_items: openItems.length,
+                    in_progress: allItems.filter((i) => i.status === 'in_progress').length,
+                    in_review: allItems.filter((i) => i.status === 'in_review').length,
+                    open_bugs: openItems.filter((i) => i.kind === 'bug').length,
+                    open_features: openItems.filter((i) => i.kind === 'feature').length,
+                    open_tasks: openItems.filter((i) => i.kind === 'task').length,
+                    overdue: openItems.filter(
+                        (i) => i.due_date && i.due_date < today
+                    ).length,
                 };
             })
         );
